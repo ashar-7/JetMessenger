@@ -38,8 +38,7 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 fun Root(defaultRouting: Routing.Root) {
-    Router(contextId = "Main", defaultRouting = defaultRouting) { backStack ->
-
+    Router(defaultRouting = defaultRouting) { backStack ->
         Crossfade(current = backStack.last()) { routing ->
             when(routing) {
                 is Routing.Root.Main -> routing.Content(
