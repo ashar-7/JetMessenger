@@ -9,30 +9,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.github.zsoltk.compose.router.BackStack
 import com.github.zsoltk.compose.router.Router
-import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
-import com.se7en.jetmessenger.ui.components.MainBottomNav
-import com.se7en.jetmessenger.ui.components.MainTopBar
 
 @Composable
 fun Routing.Root.Main.Content(
-    defaultRouting: Routing.BottomNav,
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit
 ) {
     Router(defaultRouting = defaultRouting) { backStack ->
         Scaffold(
             topBar = {
-                MainTopBar(
-                    me.picture.thumbnail,
+                TopBar(
                     currentRouting = backStack.last(),
                     onActionClick = { }
                 )
             },
             bottomBar = {
-                MainBottomNav(
-                    listOf(Routing.BottomNav.Chats, Routing.BottomNav.People),
+                BottomBar(
                     currentRouting = backStack.last(),
                     onSelected = { onBottomNavItemSelected(it, backStack) }
                 )

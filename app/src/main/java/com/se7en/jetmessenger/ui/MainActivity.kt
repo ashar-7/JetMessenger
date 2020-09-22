@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             JetMessengerTheme {
                 Providers(AmbientBackPressHandler provides backPressHandler) {
-                    Root(Routing.Root.Main)
+                    Root(Routing.Root.Main())
                 }
             }
         }
@@ -43,7 +43,6 @@ fun Root(defaultRouting: Routing.Root) {
         Crossfade(current = backStack.last()) { routing ->
             when(routing) {
                 is Routing.Root.Main -> routing.Content(
-                    Routing.BottomNav.Chats,
                     onChatClick = { user ->
                         backStack.push(Routing.Root.Conversation(user))
                     },

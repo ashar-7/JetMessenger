@@ -16,8 +16,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.ui.Routing
-import com.se7en.jetmessenger.ui.components.ConversationBottomBar
-import com.se7en.jetmessenger.ui.components.ConversationTopBar
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.viewmodels.ConversationViewModel
 
@@ -29,16 +27,13 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
 
     Scaffold(
         topBar = {
-            ConversationTopBar(
-                title = user.name.first,
-                profileImage = user.picture.thumbnail,
-                actions = actions,
+            TopBar(
                 onActionClick = {},
                 onBackPress = onBackPress
             )
         },
         bottomBar = {
-            ConversationBottomBar(
+            BottomBar(
                 onSendClick = { message ->
                     viewModel.sendMessage(user, message)
                 }

@@ -1,9 +1,12 @@
-package com.se7en.jetmessenger.ui.components
+package com.se7en.jetmessenger.ui.screens.conversation
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material.BottomAppBar
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
@@ -16,52 +19,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
+import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.ToolbarAction
-import com.se7en.jetmessenger.data.me
+import com.se7en.jetmessenger.ui.components.CircleImage
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 
 @Composable
-fun MainTopBar(
-    profileImage: Any,
-    currentRouting: Routing.BottomNav,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    contentColor: Color = contentColorFor(backgroundColor),
-    onActionClick: (action: ToolbarAction) -> Unit = { }
-) {
-    TopAppBar(
-        title = {
-            Text(
-                text = currentRouting.label,
-                style = MaterialTheme.typography.h6
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = {}) {
-                CircleImage(
-                    imageData = profileImage,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-        },
-        actions = {
-            currentRouting.actions.forEach { action ->
-                IconButton(onClick = { onActionClick(action) }) {
-                    Icon(action.icon, tint = contentColor)
-                }
-            }
-        },
-        backgroundColor = backgroundColor,
-        contentColor = contentColor,
-        elevation = 0.dp
-    )
-}
-
-@Composable
-fun ConversationTopBar(
-    title: String,
-    profileImage: Any,
-    actions: List<ToolbarAction>,
+fun Routing.Root.Conversation.TopBar(
     onActionClick: (action: ToolbarAction) -> Unit,
     onBackPress: () -> Unit,
     backgroundColor: Color = MaterialTheme.colors.surface,
@@ -70,10 +35,13 @@ fun ConversationTopBar(
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                CircleImage(imageData = profileImage, Modifier.size(38.dp))
+                CircleImage(
+                    imageData = user.picture.medium,
+                    Modifier.size(38.dp)
+                )
                 Spacer(modifier = Modifier.size(12.dp))
                 Text(
-                    text = title,
+                    text = user.name.first,
                     style = MaterialTheme.typography.subtitle1,
                     color = MaterialTheme.colors.onSurface
                 )
@@ -97,40 +65,9 @@ fun ConversationTopBar(
     )
 }
 
-@Composable
-fun MainBottomNav(
-    routings: List<Routing.BottomNav>,
-    currentRouting: Routing.BottomNav,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    contentColor: Color = contentColorFor(backgroundColor),
-    onSelected: (routing: Routing.BottomNav) -> Unit = { }
-) {
-    BottomNavigation(
-        backgroundColor = backgroundColor,
-        contentColor = contentColor,
-        elevation = if (isSystemInDarkTheme()) 0.dp else 4.dp
-    ) {
-        routings.forEach { routing ->
-            val selected = routing == currentRouting
-
-            BottomNavigationItem(
-                label = {
-                    Text(text = routing.label)
-                },
-                icon = { Icon(routing.icon) },
-                selected = selected,
-                onClick = { onSelected(routing) },
-                unselectedContentColor = EmphasisAmbient.current.disabled.applyEmphasis(
-                    contentColor()
-                )
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ConversationBottomBar(
+fun Routing.Root.Conversation.BottomBar(
     onSendClick: (text: String) -> Unit,
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = MaterialTheme.colors.primary,
@@ -238,17 +175,8 @@ fun ConversationBottomBar(
 
 @Preview
 @Composable
-fun MainTopBarPreview() {
-    MainTopBar(me.picture.medium, Routing.BottomNav.Chats)
-}
-
-@Preview
-@Composable
 fun ConversationTopBarPreview() {
-    ConversationTopBar(
-        "John",
-        "",
-        listOf(ToolbarAction.VoiceCall, ToolbarAction.VideoCall),
+    Routing.Root.Conversation(me).TopBar(
         {},
         {}
     )
@@ -256,18 +184,6 @@ fun ConversationTopBarPreview() {
 
 @Preview
 @Composable
-fun MainBottomBarPreview() {
-    MainBottomNav(
-        listOf(
-            Routing.BottomNav.Chats,
-            Routing.BottomNav.People
-        ),
-        Routing.BottomNav.Chats
-    )
-}
-
-@Preview
-@Composable
 fun ConversationBottomBarPreview() {
-    ConversationBottomBar({})
+    Routing.Root.Conversation(me).BottomBar({})
 }
