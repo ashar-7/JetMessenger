@@ -19,7 +19,8 @@ import com.se7en.jetmessenger.ui.theme.typography
 
 @Preview
 @Composable
-fun SearchField(
+fun SearchButton(
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier.fillMaxWidth(),
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
@@ -27,7 +28,7 @@ fun SearchField(
 ) {
     Button(
         modifier = modifier,
-        onClick = {},
+        onClick = onClick,
         shape = CircleShape,
         backgroundColor = backgroundColor,
         contentColor = contentColor,

@@ -18,7 +18,8 @@ import com.se7en.jetmessenger.ui.components.MainTopBar
 @Composable
 fun Routing.Root.Main.Content(
     defaultRouting: Routing.BottomNav,
-    onChatClick: (user: User) -> Unit
+    onChatClick: (user: User) -> Unit,
+    onSearchClick: () -> Unit
 ) {
     Router(defaultRouting = defaultRouting) { backStack ->
         Scaffold(
@@ -43,8 +44,8 @@ fun Routing.Root.Main.Content(
             ) {
                 Crossfade(current = backStack.last()) { routing ->
                     when(routing) {
-                        is Routing.BottomNav.Chats -> routing.Content(onChatClick)
-                        is Routing.BottomNav.People -> routing.Content(onChatClick)
+                        is Routing.BottomNav.Chats -> routing.Content(onChatClick, onSearchClick)
+                        is Routing.BottomNav.People -> routing.Content(onChatClick, onSearchClick)
                     }
                 }
             }

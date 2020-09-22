@@ -12,6 +12,7 @@ import com.github.zsoltk.compose.backpress.BackPressHandler
 import com.github.zsoltk.compose.router.Router
 import com.se7en.jetmessenger.ui.screens.conversation.Content
 import com.se7en.jetmessenger.ui.screens.main.Content
+import com.se7en.jetmessenger.ui.screens.search.Content
 import com.se7en.jetmessenger.ui.theme.JetMessengerTheme
 
 class MainActivity : AppCompatActivity() {
@@ -45,10 +46,11 @@ fun Root(defaultRouting: Routing.Root) {
                     Routing.BottomNav.Chats,
                     onChatClick = { user ->
                         backStack.push(Routing.Root.Conversation(user))
-                    }
+                    },
+                    onSearchClick = { backStack.push(Routing.Root.Search) }
                 )
                 is Routing.Root.Conversation -> routing.Content(onBackPress = { backStack.pop() })
-                is Routing.Root.Search -> Text(text = "search")
+                is Routing.Root.Search -> routing.Content(onBackPress = { backStack.pop() })
                 is Routing.Root.Settings -> Text(text = "settings")
             }
         }

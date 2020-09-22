@@ -27,7 +27,7 @@ import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
 import com.se7en.jetmessenger.ui.components.CircleBorderAvatar
-import com.se7en.jetmessenger.ui.components.SearchField
+import com.se7en.jetmessenger.ui.components.SearchButton
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.ui.theme.typography
@@ -37,15 +37,17 @@ import com.se7en.jetmessenger.viewmodels.MainViewModel
 @OptIn(ExperimentalLazyDsl::class)
 @Composable
 fun Routing.BottomNav.Chats.Content(
-    onChatClick: (user: User) -> Unit
+    onChatClick: (user: User) -> Unit,
+    onSearchClick: () -> Unit
 ) {
     val viewModel: MainViewModel = viewModel()
     val users: List<User> by viewModel.users.observeAsState(listOf())
 
     LazyColumn {
         item {
-            SearchField(
-                Modifier
+            SearchButton(
+                onClick = onSearchClick,
+                modifier = Modifier
                     .padding(16.dp, 8.dp)
                     .fillMaxWidth(),
                 backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis(),
