@@ -136,7 +136,7 @@ fun Routing.Root.Conversation.BottomBar(
                     .align(Alignment.Center),
                 keyboardType = KeyboardType.Text,
                 textColor = MaterialTheme.colors.onSurface,
-                cursorColor = MaterialTheme.colors.onSurface,
+                cursorColor = MaterialTheme.colors.primary,
                 imeAction = ImeAction.NoAction
             )
 

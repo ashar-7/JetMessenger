@@ -49,7 +49,12 @@ fun Root(defaultRouting: Routing.Root) {
                     onSearchClick = { backStack.push(Routing.Root.Search) }
                 )
                 is Routing.Root.Conversation -> routing.Content(onBackPress = { backStack.pop() })
-                is Routing.Root.Search -> routing.Content(onBackPress = { backStack.pop() })
+                is Routing.Root.Search -> routing.Content(
+                    onBackPress = { backStack.pop() },
+                    onUserClick = { user ->
+                        backStack.push(Routing.Root.Conversation(user))
+                    }
+                )
                 is Routing.Root.Settings -> Text(text = "settings")
             }
         }

@@ -39,10 +39,10 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                 }
             )
         }
-    ) { padding ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(padding)
+                .padding(innerPadding)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
         ) {
