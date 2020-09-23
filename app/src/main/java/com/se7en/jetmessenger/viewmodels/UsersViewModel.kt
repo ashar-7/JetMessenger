@@ -1,5 +1,6 @@
 package com.se7en.jetmessenger.viewmodels
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.liveData
@@ -16,12 +17,22 @@ class UsersViewModel: ViewModel() {
         emit(getUsers(20))
     }
 
+    val recentSearches = mutableStateListOf<User>()
+
     fun searchUsers(query: String) =
         users.asFlow().map {  users ->
-            if(query.isNotBlank())
-                users.filter { user -> "${user.name.first} ${user.name.last}".contains(query) }
+            return@map if(query.isNotBlank())
+                users.filter { user ->
+                    "${user.name.first} ${user.name.last}"
+                        .contains(query, ignoreCase = true)
+                }
             else listOf()
         }
+
+    fun addToRecentSearches(user: User) {
+        recentSearches.removeAll { it == user }
+        recentSearches.add(user)
+    }
 
     private suspend fun getUsers(count: Int): List<User> {
         val data = apiService.getUsers(count)

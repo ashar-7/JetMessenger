@@ -14,9 +14,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
@@ -28,6 +26,7 @@ import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
 import com.se7en.jetmessenger.ui.components.CircleBorderAvatar
 import com.se7en.jetmessenger.ui.components.SearchButton
+import com.se7en.jetmessenger.ui.components.UserAvatarWithTitle
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.ui.theme.typography
@@ -95,8 +94,9 @@ fun ActiveFriendsRow(
             else -> Pair(padding, padding)
         }
 
-        ActiveFriendAvatarItem(
-            user = user,
+        UserAvatarWithTitle(
+            title = user.name.first,
+            imageData = user.picture.medium,
             imageSize = 56.dp,
             modifier = Modifier
                 .clickable(onClick = { onItemClick(user) })
@@ -178,59 +178,6 @@ fun ChatItem(
 }
 
 @Composable
-fun ActiveFriendAvatarItem(
-    user: User,
-    imageSize: Dp = 56.dp,
-    modifier: Modifier = Modifier.padding(4.dp)
-) {
-    ConstraintLayout(modifier) {
-        val (avatar, name) = createRefs()
-
-        val avatarModifier = Modifier.constrainAs(avatar) {
-            top.linkTo(parent.top, margin = 2.dp)
-            linkTo(
-                start = parent.start,
-                end = parent.end,
-                startMargin = 2.dp,
-                endMargin = 2.dp
-            )
-            width = Dimension.preferredWrapContent
-        }
-
-        val nameModifier = Modifier.constrainAs(name) {
-            linkTo(
-                top = avatar.bottom,
-                bottom = parent.bottom,
-                start = parent.start,
-                end = parent.end,
-                startMargin = 2.dp,
-                endMargin = 2.dp,
-                topMargin = 2.dp,
-                bottomMargin = 2.dp,
-            )
-            width = Dimension.fillToConstraints
-        }
-
-        CircleBadgeAvatar(
-            imageData = user.picture.medium,
-            size = imageSize,
-            modifier = avatarModifier
-        )
-
-        ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
-            Text(
-                text = user.name.first,
-                style = MaterialTheme.typography.subtitle2,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = nameModifier
-            )
-        }
-    }
-}
-
-@Composable
 fun LastMessageWithDateTime(
     name: String,
     lastMessage: String,
@@ -255,10 +202,4 @@ fun ChatItem() {
         "Hey there",
         "17:45",
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ActiveFriendAvatarItem() {
-    ActiveFriendAvatarItem(me)
 }
