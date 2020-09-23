@@ -7,7 +7,7 @@ import com.se7en.jetmessenger.data.UserApiService
 import com.se7en.jetmessenger.data.models.User
 import kotlinx.coroutines.flow.map
 
-class MainViewModel: ViewModel() {
+class UsersViewModel: ViewModel() {
     // TODO: Error handling
 
     private val apiService = UserApiService.create()

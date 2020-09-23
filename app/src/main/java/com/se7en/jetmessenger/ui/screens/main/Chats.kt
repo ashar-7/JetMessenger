@@ -31,7 +31,7 @@ import com.se7en.jetmessenger.ui.components.SearchButton
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.ui.theme.typography
-import com.se7en.jetmessenger.viewmodels.MainViewModel
+import com.se7en.jetmessenger.viewmodels.UsersViewModel
 
 
 @OptIn(ExperimentalLazyDsl::class)
@@ -40,7 +40,7 @@ fun Routing.BottomNav.Chats.Content(
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit
 ) {
-    val viewModel: MainViewModel = viewModel()
+    val viewModel: UsersViewModel = viewModel()
     val users: List<User> by viewModel.users.observeAsState(listOf())
 
     LazyColumn {

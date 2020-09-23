@@ -20,7 +20,7 @@ import androidx.compose.ui.viewinterop.viewModel
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
-import com.se7en.jetmessenger.viewmodels.MainViewModel
+import com.se7en.jetmessenger.viewmodels.UsersViewModel
 
 // TODO: No results, recent searches, suggested
 @Composable
@@ -28,7 +28,7 @@ fun Routing.Root.Search.Content(
     onBackPress: () -> Unit,
     onUserClick: (user: User) -> Unit
 ) {
-    val viewModel: MainViewModel = viewModel()
+    val viewModel: UsersViewModel = viewModel()
     val (query, setQuery) = remember { mutableStateOf("") }
     val results: List<User> by viewModel.searchUsers(query).collectAsState(listOf())
 
