@@ -1,7 +1,11 @@
 package com.se7en.jetmessenger.ui.screens.conversation
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ColumnScope.align
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.IconButton
@@ -78,13 +82,14 @@ fun Routing.Root.Conversation.BottomBar(
         elevation = if(isSystemInDarkTheme()) 0.dp else 4.dp
     ) {
         var message: TextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
+        var expanded: Boolean by remember { mutableStateOf(false) }
 
-        when(message.text.isNotEmpty()) {
+        when(expanded) {
             true -> {
                 Icon(
                     Icons.Rounded.NavigateNext,
                     modifier = Modifier
-                        .clickable(onClick = {})
+                        .clickable(onClick = { expanded = false })
                         .padding(8.dp, 4.dp, 4.dp, 4.dp)
                 )
             }
@@ -120,7 +125,7 @@ fun Routing.Root.Conversation.BottomBar(
         }
 
         // TODO: Expand Animation
-        Stack(modifier = Modifier
+        Row(modifier = Modifier
             .clip(CircleShape)
             .background(MaterialTheme.colors.onSurfaceLowEmphasis())
             .weight(1f)
@@ -131,20 +136,21 @@ fun Routing.Root.Conversation.BottomBar(
                     message = new
                 },
                 modifier = Modifier
-                    .wrapContentHeight()
                     .padding(14.dp, 4.dp)
-                    .align(Alignment.Center),
+                    .weight(1f, true)
+                    .align(Alignment.Start),
                 keyboardType = KeyboardType.Text,
                 textColor = MaterialTheme.colors.onSurface,
                 cursorColor = MaterialTheme.colors.primary,
-                imeAction = ImeAction.NoAction
+                imeAction = ImeAction.NoAction,
+                onTextInputStarted = { expanded = true }
             )
 
             Icon(
                 Icons.Rounded.EmojiEmotions,
                 modifier = Modifier
                     .clickable(onClick = {})
-                    .align(Alignment.CenterEnd)
+                    .align(Alignment.End)
                     .padding(4.dp, 4.dp)
             )
         }
