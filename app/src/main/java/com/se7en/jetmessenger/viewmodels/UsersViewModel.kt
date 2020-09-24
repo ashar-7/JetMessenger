@@ -15,16 +15,20 @@ class UsersViewModel: ViewModel() {
 
     val users = liveData {
         emit(getUsers(20))
-    }
+    }.asFlow()
 
     val recentSearches = mutableStateListOf<User>()
+    val suggestedSearches = users.map {
+        it.filterIndexed { index, _ -> index % 2 == 0 }
+    }
 
     fun searchUsers(query: String) =
-        users.asFlow().map {  users ->
+        users.map {  users ->
             return@map if(query.isNotBlank())
                 users.filter { user ->
-                    "${user.name.first} ${user.name.last}"
-                        .contains(query, ignoreCase = true)
+                    "${user.name.first} ${user.name.last}".contains(
+                        query, ignoreCase = true
+                    )
                 }
             else listOf()
         }

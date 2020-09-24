@@ -15,15 +15,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
+import com.se7en.jetmessenger.ui.components.SubHeading
 import com.se7en.jetmessenger.ui.components.UserAvatarWithTitle
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
 
-// TODO: No results, recent searches, suggested
+// TODO: No results
 @OptIn(ExperimentalLazyDsl::class)
 @Composable
 fun Routing.Root.Search.Content(
@@ -34,6 +34,7 @@ fun Routing.Root.Search.Content(
     val (query, setQuery) = remember { mutableStateOf("") }
     val results: List<User> by viewModel.searchUsers(query).collectAsState(listOf())
     val recentSearches: List<User> = viewModel.recentSearches.reversed()
+    val suggestedSearches: List<User> by viewModel.suggestedSearches.collectAsState(listOf())
 
     Scaffold(
         topBar = {
@@ -41,25 +42,22 @@ fun Routing.Root.Search.Content(
         }
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            if(query.isBlank() && recentSearches.isNotEmpty()) {
-                item {
-                    ProvideEmphasis(emphasis = EmphasisAmbient.current.disabled) {
-                        Text(
-                            text = "RECENT SEARCHES",
-                            modifier = Modifier.padding(14.dp, 8.dp),
-                            style = MaterialTheme.typography.subtitle1.copy(
-                                fontSize = 13.sp
-                            )
-                        )
-                    }
+            if(query.isBlank()) {
+                if(recentSearches.isNotEmpty()) {
+                    item { SubHeading("RECENT SEARCHES") }
+                    item { RecentSearchesRow(recentSearches, onUserClick) }
                 }
-
-                item {
-                    RecentSearchesRow(recentSearches, onUserClick)
+                item { SubHeading("SUGGESTED") }
+                itemsIndexed(suggestedSearches) { index, user ->
+                    UserColumnItem(
+                        user = user,
+                        isOnline = index % 3 == 0,
+                        modifier = Modifier.clickable(onClick = { onUserClick(user) })
+                    )
                 }
             } else {
                 itemsIndexed(results) { index, user ->
-                    UserResultItem(
+                    UserColumnItem(
                         user = user,
                         isOnline = index % 3 == 0,
                         modifier = Modifier.clickable(onClick = {
@@ -106,7 +104,7 @@ fun RecentSearchesRow(
 }
 
 @Composable
-fun UserResultItem(
+fun UserColumnItem(
     user: User,
     isOnline: Boolean,
     modifier: Modifier = Modifier

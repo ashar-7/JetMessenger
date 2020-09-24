@@ -9,8 +9,8 @@ import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,7 +40,7 @@ fun Routing.BottomNav.Chats.Content(
     onSearchClick: () -> Unit
 ) {
     val viewModel: UsersViewModel = viewModel()
-    val users: List<User> by viewModel.users.observeAsState(listOf())
+    val users: List<User> by viewModel.users.collectAsState(listOf())
 
     LazyColumn {
         item {
