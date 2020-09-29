@@ -1,5 +1,7 @@
 package com.se7en.jetmessenger.ui.screens.conversation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.ColumnScope.align
 import androidx.compose.foundation.layout.Row
@@ -69,7 +71,10 @@ fun Routing.Root.Conversation.TopBar(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalAnimationApi::class
+)
 @Composable
 fun Routing.Root.Conversation.BottomBar(
     onSendClick: (text: String) -> Unit,
@@ -84,16 +89,17 @@ fun Routing.Root.Conversation.BottomBar(
         var message: TextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
         var expanded: Boolean by remember { mutableStateOf(false) }
 
-        when(expanded) {
-            true -> {
-                Icon(
-                    Icons.Rounded.NavigateNext,
-                    modifier = Modifier
-                        .clickable(onClick = { expanded = false })
-                        .padding(8.dp, 4.dp, 4.dp, 4.dp)
-                )
-            }
-            false -> {
+        AnimatedVisibility(visible = expanded) {
+            Icon(
+                Icons.Rounded.NavigateNext,
+                modifier = Modifier
+                    .clickable(onClick = { expanded = false })
+                    .padding(8.dp, 4.dp, 4.dp, 4.dp)
+            )
+        }
+
+        AnimatedVisibility(visible = !expanded) {
+            Row {
                 Icon(
                     Icons.Rounded.ViewModule,
                     modifier = Modifier
@@ -124,7 +130,6 @@ fun Routing.Root.Conversation.BottomBar(
             }
         }
 
-        // TODO: Expand Animation
         Row(modifier = Modifier
             .clip(CircleShape)
             .background(MaterialTheme.colors.onSurfaceLowEmphasis())
@@ -134,6 +139,7 @@ fun Routing.Root.Conversation.BottomBar(
                 value = message,
                 onValueChange = { new ->
                     message = new
+                    expanded = true
                 },
                 modifier = Modifier
                     .padding(14.dp, 4.dp)
@@ -142,8 +148,7 @@ fun Routing.Root.Conversation.BottomBar(
                 keyboardType = KeyboardType.Text,
                 textColor = MaterialTheme.colors.onSurface,
                 cursorColor = MaterialTheme.colors.primary,
-                imeAction = ImeAction.NoAction,
-                onTextInputStarted = { expanded = true }
+                imeAction = ImeAction.NoAction
             )
 
             Icon(
