@@ -4,13 +4,14 @@ import androidx.compose.foundation.Box
 import androidx.compose.foundation.ContentGravity
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
@@ -46,22 +47,36 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
         ) {
-            LazyColumnFor(
+            LazyColumnForIndexed(
                 items = messages,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(0.dp, 16.dp),
-            ) { item ->
+            ) { index, item ->
 
                 ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
+                    // Was the previous message NOT from this user?
+                    val isFirst = messages.getOrNull(index-1)?.from != item.from
+                    // Is the next message NOT from this user?
+                    val isLast = messages.getOrNull(index+1)?.from != item.from
+
                     when(item.from) {
                         me -> {
                             MessageContent(
                                 text = item.message,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 28.dp, end = 12.dp, top = 2.dp, bottom = 2.dp)
-                                    .wrapContentSize(Alignment.CenterEnd)
+                                    .padding(
+                                        start = 100.dp,
+                                        end = 12.dp,
+                                        top = if(isFirst) 4.dp else 1.dp,
+                                        bottom = if(isLast) 4.dp else 1.dp
+                                    )
+                                    .wrapContentSize(Alignment.CenterEnd),
+                                topLeftCorner = 18.dp,
+                                topRightCorner = if(isFirst) 18.dp else 3.dp,
+                                bottomRightCorner = if(isLast) 18.dp else 3.dp,
+                                bottomLeftCorner = 18.dp
                             )
                         }
                         else -> {
@@ -69,9 +84,18 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                                 text = item.message,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 28.dp, top = 2.dp, bottom = 2.dp)
+                                    .padding(
+                                        start = 12.dp,
+                                        end = 100.dp,
+                                        top = if(isFirst) 4.dp else 2.dp,
+                                        bottom = if(isLast) 4.dp else 2.dp
+                                    )
                                     .wrapContentSize(Alignment.CenterStart),
-                                backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis()
+                                backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis(),
+                                topLeftCorner = if(isFirst) 18.dp else 3.dp,
+                                topRightCorner = 18.dp,
+                                bottomRightCorner = 18.dp,
+                                bottomLeftCorner = if(isLast) 18.dp else 3.dp
                             )
                         }
                     }
@@ -86,7 +110,11 @@ fun MessageContent(
     text: String,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colors.primary,
-    contentColor: Color = contentColorFor(backgroundColor)
+    contentColor: Color = contentColorFor(backgroundColor),
+    topLeftCorner: Dp = 0.dp,
+    topRightCorner: Dp = 0.dp,
+    bottomRightCorner: Dp = 0.dp,
+    bottomLeftCorner: Dp = 0.dp
 ) {
     Box(
         modifier = modifier,
@@ -95,7 +123,7 @@ fun MessageContent(
         paddingTop = 8.dp,
         paddingBottom = 8.dp,
         backgroundColor = backgroundColor,
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner),
         gravity = ContentGravity.CenterStart
     ) {
         Text(
