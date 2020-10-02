@@ -1,6 +1,9 @@
 package com.se7en.jetmessenger.ui.screens.main
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,7 +37,7 @@ import com.se7en.jetmessenger.ui.components.SearchButton
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
-import dev.chrisbanes.accompanist.coil.CoilImageWithCrossfade
+import dev.chrisbanes.accompanist.coil.CoilImage
 
 @OptIn(ExperimentalLazyDsl::class)
 @Composable
@@ -88,25 +91,24 @@ fun ActiveFriendItem(
     user: User,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    Row(
         modifier = modifier
             .padding(16.dp, 8.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircleBadgeAvatar(
-                imageData = user.picture.medium,
-                size = 40.dp
+        CircleBadgeAvatar(
+            imageData = user.picture.medium,
+            size = 40.dp
+        )
+
+        Spacer(modifier = Modifier.padding(4.dp))
+
+        ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
+            Text(
+                "${user.name.first} ${user.name.last}",
+                style = MaterialTheme.typography.subtitle1
             )
-
-            Spacer(modifier = Modifier.padding(4.dp))
-
-            ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
-                Text(
-                    "${user.name.first} ${user.name.last}",
-                    style = MaterialTheme.typography.subtitle1
-                )
-            }
         }
     }
 }
@@ -146,13 +148,14 @@ fun StoryItem(
         shape = RoundedCornerShape(4.dp),
         modifier = modifier.size(width, height)
     ) {
-        Stack {
-            CoilImageWithCrossfade(
+        Box {
+            CoilImage(
                 storyThumbnail,
                 modifier = Modifier
                     .matchParentSize()
                     .align(Alignment.Center),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                fadeIn = true
             )
 
             Box(

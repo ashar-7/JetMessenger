@@ -3,7 +3,6 @@ package com.se7en.jetmessenger.ui.screens.conversation
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.ColumnScope.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -143,8 +142,7 @@ fun Routing.Root.Conversation.BottomBar(
                 },
                 modifier = Modifier
                     .padding(14.dp, 4.dp)
-                    .weight(1f, true)
-                    .align(Alignment.Start),
+                    .weight(1f, true),
                 keyboardType = KeyboardType.Text,
                 textColor = MaterialTheme.colors.onSurface,
                 cursorColor = MaterialTheme.colors.primary,
@@ -155,7 +153,6 @@ fun Routing.Root.Conversation.BottomBar(
                 Icons.Rounded.EmojiEmotions,
                 modifier = Modifier
                     .clickable(onClick = {})
-                    .align(Alignment.End)
                     .padding(4.dp, 4.dp)
             )
         }

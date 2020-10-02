@@ -1,8 +1,7 @@
 package com.se7en.jetmessenger.ui.screens.conversation
 
-import androidx.compose.foundation.Box
-import androidx.compose.foundation.ContentGravity
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +9,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -117,21 +117,18 @@ fun MessageContent(
     bottomLeftCorner: Dp = 0.dp
 ) {
     Box(
-        modifier = modifier,
-        paddingStart = 12.dp,
-        paddingEnd = 12.dp,
-        paddingTop = 8.dp,
-        paddingBottom = 8.dp,
-        backgroundColor = backgroundColor,
-        shape = RoundedCornerShape(topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner),
-        gravity = ContentGravity.CenterStart
+        modifier = modifier
+            .clip(RoundedCornerShape(topLeftCorner, topRightCorner, bottomRightCorner, bottomLeftCorner))
+            .background(backgroundColor)
+            .padding(12.dp, 8.dp)
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.subtitle2.copy(
                 color = contentColor,
                 fontSize = 15.sp
-            )
+            ),
+            modifier = Modifier.align(Alignment.CenterStart)
         )
     }
 }

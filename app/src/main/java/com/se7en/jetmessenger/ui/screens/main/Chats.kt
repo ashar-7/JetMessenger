@@ -1,6 +1,9 @@
 package com.se7en.jetmessenger.ui.screens.main
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ProvideTextStyle
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
@@ -127,50 +130,48 @@ fun ChatItem(
             BorderStroke(2.dp, messengerBlue)
     }
 
-    Box(
+    Row(
         modifier = modifier
             .padding(12.dp, 8.dp)
             .fillMaxWidth()
     ) {
-        Row {
-            when {
-                isOnline -> {
-                    CircleBadgeAvatar(
-                        imageData = user.picture.medium,
-                        size = 56.dp
-                    )
-                }
-                else -> CircleBorderAvatar(
+        when {
+            isOnline -> {
+                CircleBadgeAvatar(
                     imageData = user.picture.medium,
-                    size = 56.dp,
-                    border = avatarBorder
+                    size = 56.dp
+                )
+            }
+            else -> CircleBorderAvatar(
+                imageData = user.picture.medium,
+                size = 56.dp,
+                border = avatarBorder
+            )
+        }
+
+        Spacer(modifier = Modifier.padding(4.dp))
+
+        Column(
+            modifier = Modifier.align(Alignment.CenterVertically)
+        ) {
+            ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
+                Text(
+                    "${user.name.first} ${user.name.last}",
+                    style = MaterialTheme.typography.subtitle1
                 )
             }
 
-            Spacer(modifier = Modifier.padding(4.dp))
-            
-            Column(
-                modifier = Modifier.align(Alignment.CenterVertically)
-            ) {
-                ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
-                    Text(
-                        "${user.name.first} ${user.name.last}",
-                        style = MaterialTheme.typography.subtitle1
+            Spacer(modifier = Modifier.padding(2.dp))
+
+            ProvideTextStyle(value = typography.caption.copy(
+                fontSize = 14.sp
+            )) {
+                ProvideEmphasis(emphasis = EmphasisAmbient.current.medium) {
+                    LastMessageWithDateTime(
+                        user.name.first,
+                        lastMessage,
+                        dateTime
                     )
-                }
-
-                Spacer(modifier = Modifier.padding(2.dp))
-
-                ProvideTextStyle(value = typography.caption.copy(
-                    fontSize = 14.sp
-                )) {
-                    ProvideEmphasis(emphasis = EmphasisAmbient.current.medium) {
-                        LastMessageWithDateTime(
-                            user.name.first,
-                            lastMessage,
-                            dateTime
-                        )
-                    }
                 }
             }
         }
