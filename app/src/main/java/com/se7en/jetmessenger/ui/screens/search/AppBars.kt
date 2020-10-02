@@ -1,7 +1,7 @@
 package com.se7en.jetmessenger.ui.screens.search
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.Stack
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -30,7 +30,7 @@ fun Routing.Root.Search.TopBar(
     var query: TextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
     TopAppBar(
         title = {
-            Stack {
+            Box {
                 BaseTextField(
                     value = query,
                     onValueChange = {

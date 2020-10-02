@@ -1,9 +1,9 @@
 package com.se7en.jetmessenger.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Stack
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 import com.se7en.jetmessenger.data.me
-import dev.chrisbanes.accompanist.coil.CoilImageWithCrossfade
+import dev.chrisbanes.accompanist.coil.CoilImage
 
 
 @Composable
@@ -30,12 +30,14 @@ fun CircleBorderAvatar(
     border: BorderStroke? = null,
     borderInnerPadding: Dp = 5.dp
 ) {
-    Box(
-        modifier = modifier.size(size),
-        shape = CircleShape,
-        border = border,
-        padding = if(border != null) borderInnerPadding else 0.dp,
-    ) {
+    var boxModifier = modifier.size(size).clip(CircleShape)
+    if(border != null) {
+        boxModifier = boxModifier
+            .border(border)
+            .padding(borderInnerPadding)
+    }
+
+    Box(boxModifier) {
         CircleImage(imageData)
     }
 }
@@ -49,7 +51,7 @@ fun CircleBadgeAvatar(
     badgeColor: Color = Color.Green,
     badgeBackgroundColor: Color = MaterialTheme.colors.background
 ) {
-    Stack(
+    Box(
         modifier = modifier.size(size)
     ) {
         CircleImage(
@@ -75,12 +77,13 @@ fun CircleImage(
     imageData: Any,
     modifier: Modifier = Modifier
 ) {
-    CoilImageWithCrossfade(
+    CoilImage(
         data = imageData,
         modifier = modifier
             .aspectRatio(1f)
             .clip(CircleShape),
-        contentScale = ContentScale.Crop
+        contentScale = ContentScale.Crop,
+        fadeIn = true
     )
 }
 
