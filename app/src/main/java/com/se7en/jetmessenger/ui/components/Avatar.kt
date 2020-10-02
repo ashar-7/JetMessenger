@@ -30,10 +30,10 @@ fun CircleBorderAvatar(
     border: BorderStroke? = null,
     borderInnerPadding: Dp = 5.dp
 ) {
-    var boxModifier = modifier.size(size).clip(CircleShape)
+    var boxModifier = modifier.size(size)
     if(border != null) {
         boxModifier = boxModifier
-            .border(border)
+            .border(border, CircleShape)
             .padding(borderInnerPadding)
     }
 
