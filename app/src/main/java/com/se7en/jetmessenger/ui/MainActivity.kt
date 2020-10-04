@@ -3,6 +3,7 @@ package com.se7en.jetmessenger.ui
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
@@ -13,12 +14,14 @@ import com.github.zsoltk.compose.router.Router
 import com.se7en.jetmessenger.ui.screens.conversation.Content
 import com.se7en.jetmessenger.ui.screens.main.Content
 import com.se7en.jetmessenger.ui.screens.search.Content
+import com.se7en.jetmessenger.ui.screens.story.Content
 import com.se7en.jetmessenger.ui.theme.JetMessengerTheme
 
 class MainActivity : AppCompatActivity() {
 
     private val backPressHandler = BackPressHandler()
 
+    @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -37,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+@ExperimentalAnimationApi
 @Composable
 fun Root(defaultRouting: Routing.Root) {
     Router(defaultRouting = defaultRouting) { backStack ->
@@ -46,9 +50,13 @@ fun Root(defaultRouting: Routing.Root) {
                     onChatClick = { user ->
                         backStack.push(Routing.Root.Conversation(user))
                     },
-                    onSearchClick = { backStack.push(Routing.Root.Search) }
+                    onSearchClick = { backStack.push(Routing.Root.Search) },
+                    onStoryClick = { user ->
+                        backStack.push(Routing.Root.Story(user))
+                    }
                 )
                 is Routing.Root.Conversation -> routing.Content(onBackPress = { backStack.pop() })
+                is Routing.Root.Story -> routing.Content()
                 is Routing.Root.Search -> routing.Content(
                     onBackPress = { backStack.pop() },
                     onUserClick = { user ->
