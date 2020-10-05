@@ -14,7 +14,6 @@ import com.github.zsoltk.compose.router.Router
 import com.se7en.jetmessenger.ui.screens.conversation.Content
 import com.se7en.jetmessenger.ui.screens.main.Content
 import com.se7en.jetmessenger.ui.screens.search.Content
-import com.se7en.jetmessenger.ui.screens.story.Content
 import com.se7en.jetmessenger.ui.theme.JetMessengerTheme
 
 class MainActivity : AppCompatActivity() {
@@ -51,12 +50,8 @@ fun Root(defaultRouting: Routing.Root) {
                         backStack.push(Routing.Root.Conversation(user))
                     },
                     onSearchClick = { backStack.push(Routing.Root.Search) },
-                    onStoryClick = { user ->
-                        backStack.push(Routing.Root.Story(user))
-                    }
                 )
                 is Routing.Root.Conversation -> routing.Content(onBackPress = { backStack.pop() })
-                is Routing.Root.Story -> routing.Content()
                 is Routing.Root.Search -> routing.Content(
                     onBackPress = { backStack.pop() },
                     onUserClick = { user ->

@@ -28,7 +28,9 @@ sealed class Routing {
         data class Main(
             val routings: List<BottomNav> = listOf(BottomNav.Chats, BottomNav.People),
             val defaultRouting: BottomNav = BottomNav.Chats
-        ) : Root()
+        ) : Root() {
+            inner class Story(val visible: Boolean)
+        }
 
         data class Conversation(
             val user: User,
@@ -38,8 +40,6 @@ sealed class Routing {
                 ToolbarAction.Info
             )
         ) : Root()
-
-        data class Story(val user: User) : Root()
 
         object Search : Root()
         object Settings : Root()
