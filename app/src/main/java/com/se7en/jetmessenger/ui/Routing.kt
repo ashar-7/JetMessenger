@@ -28,7 +28,10 @@ sealed class Routing {
         data class Main(
             val routings: List<BottomNav> = listOf(BottomNav.Chats, BottomNav.People),
             val defaultRouting: BottomNav = BottomNav.Chats
-        ) : Root()
+        ) : Root() {
+            inner class Story(val visible: Boolean)
+        }
+
         data class Conversation(
             val user: User,
             val actions: List<ToolbarAction> = listOf(
