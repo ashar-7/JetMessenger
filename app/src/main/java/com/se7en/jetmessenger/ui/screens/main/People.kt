@@ -43,7 +43,8 @@ import dev.chrisbanes.accompanist.coil.CoilImage
 @Composable
 fun Routing.BottomNav.People.Content(
     onChatClick: (user: User) -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    onStoryClick: (user: User) -> Unit
 ) {
     val viewModel: UsersViewModel = viewModel()
     val users: List<User> by viewModel.users.collectAsState(listOf())
@@ -61,7 +62,7 @@ fun Routing.BottomNav.People.Content(
                 )
             )
         }
-        item { StoriesRow(users) }
+        item { StoriesRow(users, onStoryClick) }
         item {
             ProvideEmphasis(emphasis = EmphasisAmbient.current.disabled) {
                 Text(
@@ -115,7 +116,8 @@ fun ActiveFriendItem(
 
 @Composable
 fun StoriesRow(
-    users: List<User>
+    users: List<User>,
+    onStoryClick: (user: User) -> Unit
 ) {
     LazyRowForIndexed(items = users) { index, user ->
         val padding = when(index) {
@@ -126,8 +128,10 @@ fun StoriesRow(
 
         StoryItem(
             user = user,
-            storyThumbnail = "https://picsum.photos/id/${index+10}/200/300",
-            modifier = Modifier.padding(padding)
+            storyThumbnail = "https://picsum.photos/id/${index + 10}/200/300",
+            modifier = Modifier
+                .padding(padding)
+                .clickable(onClick = { onStoryClick(user) })
         )
     }
 }
