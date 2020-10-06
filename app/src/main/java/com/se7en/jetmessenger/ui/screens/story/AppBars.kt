@@ -2,6 +2,7 @@ package com.se7en.jetmessenger.ui.screens.story
 
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.EmphasisAmbient
@@ -22,9 +23,15 @@ import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleImage
 
 @Composable
-fun Routing.Root.Main.Story.TopBar(user: User) {
+fun Routing.Root.Main.Story.TopBar(
+    user: User,
+    modifier: Modifier = Modifier,
+    contentColor: Color = Color.White,
+    onMore: () -> Unit,
+    onClose: () -> Unit
+) {
     Column(
-        modifier = Modifier.padding(16.dp, 24.dp),
+        modifier = modifier.padding(16.dp, 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         LinearProgressIndicator(
@@ -34,7 +41,7 @@ fun Routing.Root.Main.Story.TopBar(user: User) {
                 .clip(CircleShape)
                 .height(1.dp)
                 .fillMaxWidth(),
-            color = MaterialTheme.colors.onSurface,
+            color = contentColor,
             backgroundColor = Color.Gray
         )
 
@@ -54,18 +61,31 @@ fun Routing.Root.Main.Story.TopBar(user: User) {
                     ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
                         Text(
                             text = "${user.name.first} ${user.name.last}",
-                            style = MaterialTheme.typography.subtitle2
+                            style = MaterialTheme.typography.subtitle2,
+                            color = contentColor
                         )
                     }
                     ProvideEmphasis(emphasis = EmphasisAmbient.current.medium) {
-                        Text(text = "4h", style = MaterialTheme.typography.subtitle2)
+                        Text(
+                            text = "4h",
+                            style = MaterialTheme.typography.subtitle2,
+                            color = contentColor
+                        )
                     }
                 }
             }
 
             Row(modifier = Modifier.align(Alignment.CenterEnd)) {
-                Icon(Icons.Default.MoreVert)
-                Icon(Icons.Default.Close)
+                Icon(
+                    Icons.Default.MoreVert,
+                    tint = contentColor,
+                    modifier = Modifier.clickable(onClick = onMore)
+                )
+                Icon(
+                    Icons.Default.Close,
+                    tint = contentColor,
+                    modifier = Modifier.clickable(onClick = onClose)
+                )
             }
         }
     }

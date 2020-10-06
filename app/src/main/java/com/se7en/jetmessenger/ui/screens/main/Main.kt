@@ -64,7 +64,13 @@ fun Routing.Root.Main.Content(
                 }
             }
 
-            storyBackStack.last().Content(selectedStoryUser)
+            storyBackStack.last().Content(
+                selectedStoryUser,
+                url = "https://picsum.photos/id/${System.currentTimeMillis()%100}/300/300",
+                onClose = {
+                    storyBackStack.pop()
+                }
+            )
         }
     }
 }
