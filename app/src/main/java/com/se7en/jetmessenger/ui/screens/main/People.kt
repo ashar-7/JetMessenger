@@ -38,8 +38,9 @@ import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
 import dev.chrisbanes.accompanist.coil.CoilImage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalLazyDsl::class)
+@OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
 @Composable
 fun Routing.BottomNav.People.Content(
     onChatClick: (user: User) -> Unit,
@@ -47,7 +48,7 @@ fun Routing.BottomNav.People.Content(
     onStoryClick: (user: User) -> Unit
 ) {
     val viewModel: UsersViewModel = viewModel()
-    val users: List<User> by viewModel.users.collectAsState(listOf())
+    val users: List<User> by viewModel.users.collectAsState()
 
     LazyColumn {
         item {

@@ -2,24 +2,35 @@ package com.se7en.jetmessenger.viewmodels
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.se7en.jetmessenger.data.UserApiService
 import com.se7en.jetmessenger.data.models.User
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class UsersViewModel: ViewModel() {
     // TODO: Error handling
 
     private val apiService = UserApiService.create()
 
-    val users = liveData {
-        emit(getUsers(20))
-    }.asFlow()
+    private val _users by lazy {
+        MutableStateFlow<List<User>>(listOf()).also { usersFlow ->
+            viewModelScope.launch {
+                usersFlow.value = getUsers(count = 20)
+            }
+        }
+    }
+    val users: StateFlow<List<User>> = _users
 
     val recentSearches = mutableStateListOf<User>()
-    val suggestedSearches = users.map {
-        it.filterIndexed { index, _ -> index % 2 == 0 }
+    val suggestedSearches by lazy {
+        users.map {
+            it.filterIndexed { index, _ -> index % 2 == 0 }
+        }
     }
 
     fun searchUsers(query: String) =
