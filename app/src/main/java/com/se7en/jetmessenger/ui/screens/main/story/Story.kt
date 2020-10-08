@@ -1,4 +1,4 @@
-package com.se7en.jetmessenger.ui.screens.story
+package com.se7en.jetmessenger.ui.screens.main.story
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -15,25 +15,20 @@ import androidx.compose.runtime.launchInComposition
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import com.se7en.jetmessenger.data.models.User
+import com.se7en.jetmessenger.data.models.Story
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.theme.rememberDominantColorState
 import com.se7en.jetmessenger.ui.theme.verticalGradient
 import dev.chrisbanes.accompanist.coil.CoilImage
 
 
-// TODO: integrate with view model (People screen too)
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Routing.Root.Main.Story.Content(
-    user: User?,
-    url: String,
+    story: Story?,
     onClose: () -> Unit
 ) {
     val colorState = rememberDominantColorState()
-    launchInComposition(url) {
-        colorState.updateColorsFromImageUrl(url)
-    }
 
     AnimatedVisibility(
         visible = visible,
@@ -44,7 +39,11 @@ fun Routing.Root.Main.Story.Content(
             targetOffsetY = { it * 2 }, animSpec = tween(500)
         )
     ) {
-        user?.let {
+        story?.let { story ->
+            launchInComposition(story.thumbnailUrl){
+                colorState.updateColorsFromImageUrl(story.thumbnailUrl)
+            }
+
             Surface {
                 Box(
                     modifier = Modifier
@@ -53,13 +52,13 @@ fun Routing.Root.Main.Story.Content(
                         .clickable(onClick = {})
                 ) {
                     CoilImage(
-                        data = url,
+                        data = story.imageUrl,
                         modifier = Modifier.align(Alignment.Center),
                         contentScale = ContentScale.Fit
                     )
 
                     TopBar(
-                        it,
+                        story,
                         modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
                         onMore = {},
                         onClose = onClose

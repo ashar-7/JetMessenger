@@ -14,8 +14,6 @@ import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
 import com.se7en.jetmessenger.data.me
+import com.se7en.jetmessenger.data.models.Story
+import com.se7en.jetmessenger.data.models.StoryStatus
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
@@ -36,19 +36,20 @@ import com.se7en.jetmessenger.ui.components.CircleBorderAvatar
 import com.se7en.jetmessenger.ui.components.SearchButton
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
-import com.se7en.jetmessenger.viewmodels.UsersViewModel
+import com.se7en.jetmessenger.viewmodels.StoryViewModel
 import dev.chrisbanes.accompanist.coil.CoilImage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
 @Composable
 fun Routing.BottomNav.People.Content(
+    users: List<User>,
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit,
-    onStoryClick: (user: User) -> Unit
+    onStoryClick: (story: Story) -> Unit
 ) {
-    val viewModel: UsersViewModel = viewModel()
-    val users: List<User> by viewModel.users.collectAsState()
+    val storyViewModel: StoryViewModel = viewModel()
+    val stories: List<Story> = storyViewModel.getStories(users)
 
     LazyColumn {
         item {
@@ -63,7 +64,12 @@ fun Routing.BottomNav.People.Content(
                 )
             )
         }
-        item { StoriesRow(users, onStoryClick) }
+        item {
+            StoriesRow(stories) { story ->
+                storyViewModel.updateStoryStatus(story.user, StoryStatus.AVAILABLE_SEEN)
+                onStoryClick(story)
+            }
+        }
         item {
             ProvideEmphasis(emphasis = EmphasisAmbient.current.disabled) {
                 Text(
@@ -117,45 +123,54 @@ fun ActiveFriendItem(
 
 @Composable
 fun StoriesRow(
-    users: List<User>,
-    onStoryClick: (user: User) -> Unit
+    stories: List<Story>,
+    onStoryClick: (story: Story) -> Unit
 ) {
-    LazyRowForIndexed(items = users) { index, user ->
+    LazyRowForIndexed(items = stories) { index, story ->
         val padding = when(index) {
             0 -> PaddingValues(8.dp, 2.dp, 2.dp, 2.dp)
-            users.lastIndex -> PaddingValues(2.dp, 2.dp, 8.dp, 2.dp)
+            stories.lastIndex -> PaddingValues(2.dp, 2.dp, 8.dp, 2.dp)
             else -> PaddingValues(2.dp, 2.dp, 2.dp, 2.dp)
         }
 
         StoryItem(
-            user = user,
-            storyThumbnail = "https://picsum.photos/id/${index + 10}/200/300",
-            modifier = Modifier
-                .padding(padding)
-                .clickable(onClick = { onStoryClick(user) })
+            story = story,
+            modifier = Modifier.padding(padding),
+            onStoryClick = onStoryClick
         )
     }
 }
 
 @Composable
 fun StoryItem(
-    user: User,
-    storyThumbnail: Any,
+    story: Story,
     width: Dp = 96.dp,
     height: Dp = 140.dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onStoryClick: (story: Story) -> Unit = {}
 ) {
+    val avatarBorder = when(story.status) {
+        StoryStatus.AVAILABLE_NOT_SEEN ->
+            BorderStroke(2.dp, messengerBlue)
+        else ->
+            BorderStroke(2.dp, Color.LightGray)
+    }
+
     Card(
         backgroundColor = EmphasisAmbient.current.disabled.applyEmphasis(
             MaterialTheme.colors.surface
         ),
         contentColor = Color.White,
         shape = RoundedCornerShape(4.dp),
-        modifier = modifier.size(width, height)
+        modifier = modifier
+            .size(width, height)
+            .clickable(onClick = {
+                onStoryClick(story)
+            })
     ) {
         Box {
             CoilImage(
-                storyThumbnail,
+                story.thumbnailUrl,
                 modifier = Modifier
                     .matchParentSize()
                     .align(Alignment.Center),
@@ -180,16 +195,16 @@ fun StoryItem(
             )
 
             CircleBorderAvatar(
-                imageData = user.picture.thumbnail,
+                imageData = story.user.picture.thumbnail,
                 size = 30.dp,
-                border = BorderStroke(2.dp, messengerBlue),
+                border = avatarBorder,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(4.dp)
             )
 
             Text(
-                text = "${user.name.first} ${user.name.last}",
+                text = "${story.user.name.first} ${story.user.name.last}",
                 style = MaterialTheme.typography.subtitle1.copy(
                     fontSize = 12.sp
                 ),
@@ -214,7 +229,12 @@ fun ActiveFriendItemPreview() {
 @Composable
 fun StoryItemPreview() {
     StoryItem(
-        user = me,
-        storyThumbnail = ""
+        story = Story(
+            me,
+            imageUrl = "",
+            thumbnailUrl = "",
+            status = StoryStatus.AVAILABLE_NOT_SEEN,
+            time = "4h"
+        )
     )
 }

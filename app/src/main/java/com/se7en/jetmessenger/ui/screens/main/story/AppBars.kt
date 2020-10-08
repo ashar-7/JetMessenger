@@ -1,4 +1,4 @@
-package com.se7en.jetmessenger.ui.screens.story
+package com.se7en.jetmessenger.ui.screens.main.story
 
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
@@ -18,13 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.se7en.jetmessenger.data.models.User
+import com.se7en.jetmessenger.data.models.Story
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleImage
 
 @Composable
 fun Routing.Root.Main.Story.TopBar(
-    user: User,
+    story: Story,
     modifier: Modifier = Modifier,
     contentColor: Color = Color.White,
     onMore: () -> Unit,
@@ -55,19 +55,19 @@ fun Routing.Root.Main.Story.TopBar(
                 modifier = Modifier.align(Alignment.CenterStart),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CircleImage(imageData = user.picture.medium, modifier = Modifier.size(36.dp))
+                CircleImage(imageData = story.user.picture.medium, modifier = Modifier.size(36.dp))
 
                 Column {
                     ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
                         Text(
-                            text = "${user.name.first} ${user.name.last}",
+                            text = "${story.user.name.first} ${story.user.name.last}",
                             style = MaterialTheme.typography.subtitle2,
                             color = contentColor
                         )
                     }
                     ProvideEmphasis(emphasis = EmphasisAmbient.current.medium) {
                         Text(
-                            text = "4h",
+                            text = story.time,
                             style = MaterialTheme.typography.subtitle2,
                             color = contentColor
                         )
