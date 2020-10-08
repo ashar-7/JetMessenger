@@ -12,18 +12,15 @@ import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
-import com.se7en.jetmessenger.data.StoryStatus
 import com.se7en.jetmessenger.data.me
+import com.se7en.jetmessenger.data.models.StoryStatus
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
@@ -33,19 +30,16 @@ import com.se7en.jetmessenger.ui.components.UserAvatarWithTitle
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.ui.theme.typography
-import com.se7en.jetmessenger.viewmodels.UsersViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
 @OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
 @Composable
 fun Routing.BottomNav.Chats.Content(
+    users: List<User>,
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit
 ) {
-    val viewModel: UsersViewModel = viewModel()
-    val users: List<User> by viewModel.users.collectAsState()
-
     LazyColumn {
         item {
             SearchButton(

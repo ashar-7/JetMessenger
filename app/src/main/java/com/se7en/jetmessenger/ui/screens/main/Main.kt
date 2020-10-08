@@ -9,23 +9,34 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.viewModel
 import com.github.zsoltk.compose.router.BackStack
 import com.github.zsoltk.compose.router.Router
+import com.se7en.jetmessenger.data.models.Story
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
-import com.se7en.jetmessenger.ui.screens.story.Content
+import com.se7en.jetmessenger.ui.screens.main.story.Content
+import com.se7en.jetmessenger.viewmodels.UsersViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalCoroutinesApi::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalMaterialApi::class
+)
 @Composable
 fun Routing.Root.Main.Content(
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit
 ) {
+    val viewModel: UsersViewModel = viewModel()
+    val users: List<User> by viewModel.users.collectAsState()
+
     Router(defaultRouting = defaultRouting) { mainBackStack ->
         Router(defaultRouting = Story(visible = false)) { storyBackStack ->
 
-            var selectedStoryUser: User? by remember { mutableStateOf(null) }
+            var currentStory: Story? by remember { mutableStateOf(null) }
 
             Scaffold(
                 topBar = {
@@ -48,14 +59,16 @@ fun Routing.Root.Main.Content(
                     Crossfade(current = mainBackStack.last()) { routing ->
                         when (routing) {
                             is Routing.BottomNav.Chats -> routing.Content(
+                                users,
                                 onChatClick,
                                 onSearchClick
                             )
                             is Routing.BottomNav.People -> routing.Content(
+                                users,
                                 onChatClick,
                                 onSearchClick,
-                                { user ->
-                                    selectedStoryUser = user
+                                { story ->
+                                    currentStory = story
                                     storyBackStack.push(Story(visible = true))
                                 }
                             )
@@ -65,8 +78,7 @@ fun Routing.Root.Main.Content(
             }
 
             storyBackStack.last().Content(
-                selectedStoryUser,
-                url = "https://picsum.photos/id/${System.currentTimeMillis()%100}/300/300",
+                currentStory,
                 onClose = {
                     storyBackStack.pop()
                 }
