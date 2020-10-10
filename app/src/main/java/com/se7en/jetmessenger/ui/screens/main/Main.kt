@@ -77,12 +77,7 @@ fun Routing.Root.Main.Content(
                 }
             }
 
-            storyBackStack.last().Content(
-                currentStory,
-                onClose = {
-                    storyBackStack.pop()
-                }
-            )
+            storyBackStack.last().Content(currentStory, onClose = { storyBackStack.pop() })
         }
     }
 }

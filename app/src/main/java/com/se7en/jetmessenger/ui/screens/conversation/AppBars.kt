@@ -131,7 +131,7 @@ fun Routing.Root.Conversation.BottomBar(
 
         Row(modifier = Modifier
             .clip(CircleShape)
-            .background(MaterialTheme.colors.onSurfaceLowEmphasis())
+            .background(MaterialTheme.colors.onSurfaceLowEmphasis)
             .weight(1f)
         ) {
             BaseTextField(

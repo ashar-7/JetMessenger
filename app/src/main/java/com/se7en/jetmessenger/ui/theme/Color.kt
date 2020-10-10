@@ -18,9 +18,8 @@ import kotlinx.coroutines.withContext
 val messengerBlue = Color(0xFF0078FF)
 val messengerLightBlue = Color(0xFF00C6FF)
 
-fun Colors.onSurfaceLowEmphasis(): Color {
-    return onSurface.copy(alpha = 0.12f)
-}
+val Colors.onSurfaceLowEmphasis: Color
+    get() = onSurface.copy(alpha = 0.12f)
 
 // DominantColorState copied and modified from Jetcaster:
 // https://github.com/android/compose-samples/blob/master/Jetcaster/app/src/main/java/com/example/jetcaster/util/DynamicTheming.kt

@@ -39,7 +39,9 @@ sealed class Routing {
                 ToolbarAction.VideoCall,
                 ToolbarAction.Info
             )
-        ) : Root()
+        ) : Root() {
+            inner class Info(val visible: Boolean)
+        }
 
         object Search : Root()
         object Settings : Root()
