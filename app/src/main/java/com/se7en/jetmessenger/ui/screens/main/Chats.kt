@@ -47,7 +47,7 @@ fun Routing.BottomNav.Chats.Content(
                 modifier = Modifier
                     .padding(16.dp, 8.dp)
                     .fillMaxWidth(),
-                backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis(),
+                backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis,
                 contentColor = MaterialTheme.colors.onSurface.copy(
                     alpha = 0.5f
                 )
