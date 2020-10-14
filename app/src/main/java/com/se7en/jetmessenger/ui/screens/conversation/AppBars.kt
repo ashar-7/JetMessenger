@@ -18,17 +18,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.gesture.pressIndicatorGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
+import com.se7en.jetmessenger.R
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.ToolbarAction
 import com.se7en.jetmessenger.ui.components.CircleImage
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
+import dev.chrisbanes.accompanist.coil.CoilImage
 
 @Composable
 fun Routing.Root.Conversation.TopBar(
@@ -66,7 +69,7 @@ fun Routing.Root.Conversation.TopBar(
         },
         backgroundColor = backgroundColor,
         contentColor = contentColor,
-        elevation = if(isSystemInDarkTheme()) 0.dp else 4.dp
+        elevation = if (isSystemInDarkTheme()) 0.dp else 4.dp
     )
 }
 
@@ -77,13 +80,15 @@ fun Routing.Root.Conversation.TopBar(
 @Composable
 fun Routing.Root.Conversation.BottomBar(
     onSendClick: (text: String) -> Unit,
+    onEmojiPressStart: () -> Unit,
+    onEmojiPressStop: () -> Unit,
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = MaterialTheme.colors.primary,
 ) {
     BottomAppBar(
         backgroundColor = backgroundColor,
         contentColor = contentColor,
-        elevation = if(isSystemInDarkTheme()) 0.dp else 4.dp
+        elevation = if (isSystemInDarkTheme()) 0.dp else 4.dp
     ) {
         var message: TextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
         var expanded: Boolean by remember { mutableStateOf(false) }
@@ -129,10 +134,11 @@ fun Routing.Root.Conversation.BottomBar(
             }
         }
 
-        Row(modifier = Modifier
-            .clip(CircleShape)
-            .background(MaterialTheme.colors.onSurfaceLowEmphasis)
-            .weight(1f)
+        Row(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colors.onSurfaceLowEmphasis)
+                .weight(1f)
         ) {
             BaseTextField(
                 value = message,
@@ -157,7 +163,7 @@ fun Routing.Root.Conversation.BottomBar(
             )
         }
 
-        when(message.text.isNotEmpty()) {
+        when (message.text.isNotEmpty()) {
             true -> {
                 Icon(
                     Icons.Rounded.Send,
@@ -170,12 +176,17 @@ fun Routing.Root.Conversation.BottomBar(
                 )
             }
             false -> {
-                Icon(
-                    Icons.Rounded.ThumbUpAlt,
-                    modifier = Modifier
-                        .clickable(onClick = {})
-                        .padding(8.dp, 4.dp)
-                )
+                IconButton(onClick = {}) {
+                    CoilImage(
+                        data = R.drawable.poo,
+                        modifier = Modifier
+                            .pressIndicatorGestureFilter(
+                                onStart = { onEmojiPressStart() },
+                                onStop = onEmojiPressStop,
+                                onCancel = onEmojiPressStop
+                            ).padding(8.dp, 4.dp)
+                    )
+                }
             }
         }
     }
@@ -193,5 +204,5 @@ fun ConversationTopBarPreview() {
 @Preview
 @Composable
 fun ConversationBottomBarPreview() {
-    Routing.Root.Conversation(me).BottomBar({})
+    Routing.Root.Conversation(me).BottomBar({}, {}, {})
 }
