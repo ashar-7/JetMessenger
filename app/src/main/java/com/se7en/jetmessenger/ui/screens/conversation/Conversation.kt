@@ -35,30 +35,23 @@ import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.viewmodels.ConversationViewModel
 import dev.chrisbanes.accompanist.coil.CoilImage
-import java.util.*
-import kotlin.concurrent.timerTask
-
-// NOTE: The emoji transition feels like it depends on some "side effects",
-// so maybe improve the transition code sometime
 
 val emojiSize = DpPropKey()
 val rotation = FloatPropKey()
+
+val minEmojiSize = 20.dp
+val maxEmojiSize = 50.dp
 const val emojiTimeout = 3000
 const val emojiScale = 1.5f
 
 enum class EmojiState {
-    HIDDEN, START, END
+    START, END
 }
 
 fun createEmojiTransition(): TransitionDefinition<EmojiState> {
     return transitionDefinition {
-        state(EmojiState.HIDDEN) {
-            this[emojiSize] = 0.dp
-            this[rotation] = 0f
-        }
-
         state(EmojiState.START) {
-            this[emojiSize] = 20.dp
+            this[emojiSize] = minEmojiSize
             this[rotation] = 0f
         }
 
@@ -67,16 +60,20 @@ fun createEmojiTransition(): TransitionDefinition<EmojiState> {
             this[rotation] = 0f
         }
 
-        transition(fromState = EmojiState.START, toState = EmojiState.END) {
+        transition(EmojiState.START to EmojiState.END) {
             interruptionHandling = InterruptionHandling.SNAP_TO_END
+
             emojiSize using keyframes {
                 durationMillis = emojiTimeout
-                20.dp at 0 with LinearOutSlowInEasing
-                50.dp at 2950 with FastOutSlowInEasing
+
+                // Grow from minEmojiSize to maxEmojiSize until the last 50 ms and shrink to 0 dp in the last 50ms
+                minEmojiSize at 0 with LinearOutSlowInEasing
+                maxEmojiSize at emojiTimeout - 50 with FastOutSlowInEasing
             }
 
             rotation using repeatable(
-                AnimationConstants.Infinite,
+                // 30 iterations of 100 ms = 3 seconds
+                iterations = 3000/100,
                 animation = keyframes {
                     durationMillis = 100
                     -3f at 0
@@ -95,14 +92,11 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
     val messages = viewModel.messages.getValue(user)
     var themeColor by remember { mutableStateOf(messengerBlue) }
 
-    val emojiState = remember { mutableStateOf(EmojiState.HIDDEN) }
-    val timer by remember { mutableStateOf(Timer()) }
-    var timerTask by remember { mutableStateOf(timerTask {}) }
-
+    var emojiState by remember { mutableStateOf(EmojiState.END) }
     val transitionState = transition(
         definition = createEmojiTransition(),
-        initState = emojiState.value,
-        toState = if (emojiState.value == EmojiState.START) EmojiState.END else EmojiState.HIDDEN
+        initState = emojiState,
+        toState = EmojiState.END
     )
 
     Router(defaultRouting = Info(visible = false)) { infoBackStack ->
@@ -123,22 +117,12 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                 BottomBar(
                     onSendClick = { viewModel.sendMessage(user, it) },
                     contentColor = themeColor,
-                    onEmojiPressStart = {
-                        emojiState.value = EmojiState.START
-                        // timer task to cancel the emoji when pressed too long (emojiTimeout)
-                        timerTask = timerTask {
-                            if (emojiState.value != EmojiState.HIDDEN) {
-                                emojiState.value = EmojiState.HIDDEN
-                            }
-                        }
-                        timer.schedule(timerTask, emojiTimeout.toLong())
-                    },
+                    onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
-                        timerTask.cancel()
-                        if (emojiState.value != EmojiState.HIDDEN) {
+                        if (transitionState[emojiSize] > 20.dp) {
                             viewModel.sendEmoji(transitionState[emojiSize] * emojiScale, user, R.drawable.poo)
-                            emojiState.value = EmojiState.HIDDEN
                         }
+                        emojiState = EmojiState.END
                     }
                 )
             }
