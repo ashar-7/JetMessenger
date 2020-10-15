@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRowForIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.Card
-import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
@@ -71,7 +71,7 @@ fun Routing.BottomNav.People.Content(
             }
         }
         item {
-            ProvideEmphasis(emphasis = EmphasisAmbient.current.disabled) {
+            ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.disabled) {
                 Text(
                     text = "ACTIVE",
                     modifier = Modifier.padding(14.dp, 8.dp),
@@ -112,7 +112,7 @@ fun ActiveFriendItem(
 
         Spacer(modifier = Modifier.padding(4.dp))
 
-        ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
+        ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
             Text(
                 "${user.name.first} ${user.name.last}",
                 style = MaterialTheme.typography.subtitle1
@@ -157,7 +157,7 @@ fun StoryItem(
     }
 
     Card(
-        backgroundColor = EmphasisAmbient.current.disabled.applyEmphasis(
+        backgroundColor = AmbientEmphasisLevels.current.disabled.applyEmphasis(
             MaterialTheme.colors.surface
         ),
         contentColor = Color.White,

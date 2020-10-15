@@ -1,8 +1,8 @@
 package com.se7en.jetmessenger.ui.screens.main
 
+import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.contentColor
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
@@ -73,8 +73,8 @@ fun Routing.Root.Main.BottomBar(
                 icon = { Icon(routing.icon) },
                 selected = selected,
                 onClick = { onSelected(routing) },
-                unselectedContentColor = EmphasisAmbient.current.disabled.applyEmphasis(
-                    contentColor()
+                unselectedContentColor = AmbientEmphasisLevels.current.disabled.applyEmphasis(
+                    AmbientContentColor.current
                 )
             )
         }

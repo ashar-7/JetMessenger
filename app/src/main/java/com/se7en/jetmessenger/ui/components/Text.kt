@@ -2,8 +2,8 @@ package com.se7en.jetmessenger.ui.components
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.Emphasis
-import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
@@ -17,7 +17,7 @@ fun SubHeading(
     text: String,
     modifier: Modifier = Modifier.padding(14.dp, 8.dp),
     textStyle: TextStyle = MaterialTheme.typography.subtitle1.copy(fontSize = 13.sp),
-    emphasis: Emphasis = EmphasisAmbient.current.disabled
+    emphasis: Emphasis = AmbientEmphasisLevels.current.disabled
 ) {
     ProvideEmphasis(emphasis) {
         Text(
