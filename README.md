@@ -12,7 +12,7 @@ Facebook Messenger clone built with Jetpack Compose
 JetMessenger is still under development and some screens are not yet implemented.
 
 ## Libraries
-* [Jetpack Compose](https://developer.android.com/jetpack/compose) (current version: `1.0.0-alpha04`)
+* [Jetpack Compose](https://developer.android.com/jetpack/compose) (current version: `1.0.0-alpha05`)
 * [Accompanist](https://github.com/chrisbanes/accompanist)
 * [compose-router](https://github.com/zsoltk/compose-router)
 
