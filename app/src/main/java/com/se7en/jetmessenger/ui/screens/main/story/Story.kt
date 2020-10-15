@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.launchInComposition
+import androidx.compose.runtime.LaunchedTask
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -40,7 +40,7 @@ fun Routing.Root.Main.Story.Content(
         )
     ) {
         story?.let { story ->
-            launchInComposition(story.thumbnailUrl){
+            LaunchedTask(story.thumbnailUrl){
                 colorState.updateColorsFromImageUrl(story.thumbnailUrl)
             }
 

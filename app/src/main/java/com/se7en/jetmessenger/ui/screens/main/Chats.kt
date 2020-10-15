@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRowForIndexed
-import androidx.compose.material.EmphasisAmbient
+import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
@@ -149,7 +149,7 @@ fun ChatItem(
         Column(
             modifier = Modifier.align(Alignment.CenterVertically)
         ) {
-            ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
+            ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
                 Text(
                     "${user.name.first} ${user.name.last}",
                     style = MaterialTheme.typography.subtitle1
@@ -161,7 +161,7 @@ fun ChatItem(
             ProvideTextStyle(value = typography.caption.copy(
                 fontSize = 14.sp
             )) {
-                ProvideEmphasis(emphasis = EmphasisAmbient.current.medium) {
+                ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.medium) {
                     LastMessageWithDateTime(
                         user.name.first,
                         lastMessage,

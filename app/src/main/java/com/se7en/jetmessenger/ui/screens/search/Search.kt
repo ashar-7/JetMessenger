@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRowForIndexed
-import androidx.compose.material.EmphasisAmbient
+import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.material.Scaffold
@@ -122,7 +122,7 @@ fun UserColumnItem(
 
             Spacer(modifier = Modifier.padding(4.dp))
 
-            ProvideEmphasis(emphasis = EmphasisAmbient.current.high) {
+            ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
                 Text(
                     "${user.name.first} ${user.name.last}",
                     style = MaterialTheme.typography.subtitle1
