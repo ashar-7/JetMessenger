@@ -13,6 +13,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Call
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.VideoCall
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +59,11 @@ val themeColors = listOf(
     row.plus(List(size = cols - row.size) { null })
 }
 
+val Audio = NamedIcon("Audio", Icons.Rounded.Call)
+val Video = NamedIcon("Video", Icons.Rounded.VideoCall)
+val Profile = NamedIcon("Profile", Icons.Rounded.Person)
+val Mute = NamedIcon("Mute", Icons.Rounded.Notifications)
+
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun Routing.Root.Conversation.Info.Content(
@@ -88,7 +98,7 @@ fun Routing.Root.Conversation.Info.Content(
                         style = MaterialTheme.typography.h6
                     )
                     IconsRow(
-                        listOf(NamedIcon.Audio, NamedIcon.Video, NamedIcon.Profile, NamedIcon.Mute),
+                        listOf(Audio, Video, Profile, Mute),
                         modifier = Modifier.fillMaxWidth().padding(16.dp)
                     )
                     Row(
