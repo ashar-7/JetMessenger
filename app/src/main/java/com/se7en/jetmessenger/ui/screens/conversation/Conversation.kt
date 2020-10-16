@@ -42,7 +42,7 @@ val rotation = FloatPropKey()
 val minEmojiSize = 20.dp
 val maxEmojiSize = 50.dp
 const val emojiTimeout = 3000
-const val emojiScale = 1.5f
+const val emojiScale = 2f
 
 enum class EmojiState {
     START, END
@@ -91,6 +91,7 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
     val viewModel: ConversationViewModel = viewModel()
     val messages = viewModel.messages.getValue(user)
     var themeColor by remember { mutableStateOf(messengerBlue) }
+    var emoji by remember { mutableStateOf(R.drawable.thumbs_up) }
 
     var emojiState by remember { mutableStateOf(EmojiState.END) }
     val transitionState = transition(
@@ -116,11 +117,12 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
             bottomBar = {
                 BottomBar(
                     onSendClick = { viewModel.sendMessage(user, it) },
-                    contentColor = themeColor,
+                    themeColor = themeColor,
+                    emojiResId = emoji,
                     onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
                         if (transitionState[emojiSize] > 20.dp) {
-                            viewModel.sendEmoji(transitionState[emojiSize] * emojiScale, user, R.drawable.poo)
+                            viewModel.sendEmoji(transitionState[emojiSize] * emojiScale, user, emoji)
                         }
                         emojiState = EmojiState.END
                     }
@@ -135,6 +137,7 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                     messages = messages,
                     modifier = Modifier.fillMaxWidth().padding(0.dp, 16.dp),
                     themeColor = themeColor,
+                    emojiResId = emoji,
                     transitionState = transitionState,
                     onEmojiAnimationEnd = { it.shouldAnimate = false }
                 )
@@ -144,7 +147,9 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
         infoBackStack.last().Content(
             user,
             themeColor = themeColor,
+            emojiResId = emoji,
             onColorSelected = { themeColor = it },
+            onEmojiSelected = { emoji = it },
             onBackPress = { infoBackStack.pop() }
         )
     }
@@ -156,6 +161,7 @@ fun Messages(
     messages: List<Message>,
     modifier: Modifier = Modifier,
     themeColor: Color = MaterialTheme.colors.primary,
+    emojiResId: Int,
     transitionState: TransitionState,
     onEmojiAnimationEnd: (emoji: Emoji) -> Unit
 ) {
@@ -177,7 +183,7 @@ fun Messages(
         item {
             // This acts as a placeholder while the emoji button is pressed
             Emoji(
-                resId = R.drawable.poo,
+                resId = emojiResId,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(

@@ -79,15 +79,16 @@ fun Routing.Root.Conversation.TopBar(
 )
 @Composable
 fun Routing.Root.Conversation.BottomBar(
+    emojiResId: Int,
+    themeColor: Color = MaterialTheme.colors.primary,
+    backgroundColor: Color = MaterialTheme.colors.surface,
     onSendClick: (text: String) -> Unit,
     onEmojiPressStart: () -> Unit,
-    onEmojiPressStop: () -> Unit,
-    backgroundColor: Color = MaterialTheme.colors.surface,
-    contentColor: Color = MaterialTheme.colors.primary,
+    onEmojiPressStop: () -> Unit
 ) {
     BottomAppBar(
         backgroundColor = backgroundColor,
-        contentColor = contentColor,
+        contentColor = themeColor,
         elevation = if (isSystemInDarkTheme()) 0.dp else 4.dp
     ) {
         var message: TextFieldValue by remember { mutableStateOf(TextFieldValue("")) }
@@ -178,13 +179,13 @@ fun Routing.Root.Conversation.BottomBar(
             false -> {
                 IconButton(onClick = {}) {
                     CoilImage(
-                        data = R.drawable.poo,
+                        data = emojiResId,
                         modifier = Modifier
                             .pressIndicatorGestureFilter(
                                 onStart = { onEmojiPressStart() },
                                 onStop = onEmojiPressStop,
                                 onCancel = onEmojiPressStop
-                            ).padding(8.dp, 4.dp)
+                            ).padding(10.dp)
                     )
                 }
             }
@@ -204,5 +205,10 @@ fun ConversationTopBarPreview() {
 @Preview
 @Composable
 fun ConversationBottomBarPreview() {
-    Routing.Root.Conversation(me).BottomBar({}, {}, {})
+    Routing.Root.Conversation(me).BottomBar(
+        R.drawable.thumbs_up,
+        onSendClick = {},
+        onEmojiPressStart = {},
+        onEmojiPressStop = {}
+    )
 }

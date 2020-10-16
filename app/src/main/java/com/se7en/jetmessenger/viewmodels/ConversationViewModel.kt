@@ -17,7 +17,7 @@ class ConversationViewModel : ViewModel() {
             Message(me, "Hey ${user.name.first}"),
             Message(me, "How you doing?"),
             Message(user, "Great! How are you doing?"),
-            Emoji(R.drawable.poo, 40.dp, shouldAnimate = false, user)
+            Emoji(R.drawable.thumbs_up, 40.dp, shouldAnimate = false, user)
         )
     }
 
@@ -26,6 +26,7 @@ class ConversationViewModel : ViewModel() {
     }
 
     fun sendEmoji(size: Dp, to: User, resId: Int) {
-        messages[to] = messages.getValue(to) + Emoji(resId, size, shouldAnimate = true, me)
+        messages[to] = messages.getValue(to) +
+                Emoji(resId, size, shouldAnimate = true, me)
     }
 }
