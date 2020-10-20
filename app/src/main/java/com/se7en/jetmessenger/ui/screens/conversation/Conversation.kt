@@ -19,14 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import com.github.zsoltk.compose.router.Router
-import com.se7en.jetmessenger.R
 import com.se7en.jetmessenger.data.me
-import com.se7en.jetmessenger.data.models.Emoji
 import com.se7en.jetmessenger.data.models.Message
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.ToolbarAction
@@ -42,7 +41,7 @@ val rotation = FloatPropKey()
 val minEmojiSize = 20.dp
 val maxEmojiSize = 50.dp
 const val emojiTimeout = 3000
-const val emojiScale = 1.5f
+const val emojiScale = 2f
 
 enum class EmojiState {
     START, END
@@ -73,7 +72,7 @@ fun createEmojiTransition(): TransitionDefinition<EmojiState> {
 
             rotation using repeatable(
                 // 30 iterations of 100 ms = 3 seconds
-                iterations = 3000/100,
+                iterations = 3000 / 100,
                 animation = keyframes {
                     durationMillis = 100
                     -3f at 0
@@ -91,6 +90,7 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
     val viewModel: ConversationViewModel = viewModel()
     val messages = viewModel.messages.getValue(user)
     var themeColor by remember { mutableStateOf(messengerBlue) }
+    var currentEmoji by remember { mutableStateOf(THUMBS_UP) }
 
     var emojiState by remember { mutableStateOf(EmojiState.END) }
     val transitionState = transition(
@@ -106,7 +106,8 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                     onActionClick = { action ->
                         when (action) {
                             ToolbarAction.Info -> infoBackStack.push(Info(visible = true))
-                            else -> {}
+                            else -> {
+                            }
                         }
                     },
                     onBackPress = onBackPress,
@@ -115,12 +116,17 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
             },
             bottomBar = {
                 BottomBar(
-                    onSendClick = { viewModel.sendMessage(user, it) },
-                    contentColor = themeColor,
+                    onSendClick = { viewModel.sendTextMessage(user, it) },
+                    themeColor = themeColor,
+                    emojiId = currentEmoji,
                     onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
                         if (transitionState[emojiSize] > 20.dp) {
-                            viewModel.sendEmoji(transitionState[emojiSize] * emojiScale, user, R.drawable.poo)
+                            viewModel.sendEmoji(
+                                user,
+                                currentEmoji,
+                                size = transitionState[emojiSize] * emojiScale,
+                            )
                         }
                         emojiState = EmojiState.END
                     }
@@ -135,6 +141,7 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                     messages = messages,
                     modifier = Modifier.fillMaxWidth().padding(0.dp, 16.dp),
                     themeColor = themeColor,
+                    emojiId = currentEmoji,
                     transitionState = transitionState,
                     onEmojiAnimationEnd = { it.shouldAnimate = false }
                 )
@@ -144,7 +151,9 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
         infoBackStack.last().Content(
             user,
             themeColor = themeColor,
+            currentEmojiId = currentEmoji,
             onColorSelected = { themeColor = it },
+            onEmojiSelected = { currentEmoji = it },
             onBackPress = { infoBackStack.pop() }
         )
     }
@@ -156,28 +165,33 @@ fun Messages(
     messages: List<Message>,
     modifier: Modifier = Modifier,
     themeColor: Color = MaterialTheme.colors.primary,
+    emojiId: String,
     transitionState: TransitionState,
-    onEmojiAnimationEnd: (emoji: Emoji) -> Unit
+    onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(items = messages) { index, item ->
 
-            if (item is Emoji) {
-                EmojiItem(item, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
-            } else {
-                // Was the previous message NOT from this user?
-                val isFirst = messages.getOrNull(index - 1)?.from != item.from
-                // Is the next message NOT from this user?
-                val isLast = messages.getOrNull(index + 1)?.from != item.from
+            when (item) {
+                is Message.Emoji -> {
+                    EmojiMessageItem(item, themeColor, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
+                }
+                is Message.Text -> {
+                    // Was the previous message NOT from this user?
+                    val isFirst = messages.getOrNull(index - 1)?.from != item.from
+                    // Is the next message NOT from this user?
+                    val isLast = messages.getOrNull(index + 1)?.from != item.from
 
-                MessageItem(item, isFirst, isLast, themeColor, Modifier.fillMaxWidth())
+                    TextMessageItem(item, isFirst, isLast, themeColor, Modifier.fillMaxWidth())
+                }
             }
         }
 
         item {
             // This acts as a placeholder while the emoji button is pressed
-            Emoji(
-                resId = R.drawable.poo,
+            EmojiMessage(
+                id = emojiId,
+                tint = if(emojiId == THUMBS_UP) themeColor else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -194,8 +208,8 @@ fun Messages(
 }
 
 @Composable
-fun MessageItem(
-    item: Message,
+fun TextMessageItem(
+    item: Message.Text,
     isFirst: Boolean,
     isLast: Boolean,
     themeColor: Color,
@@ -231,7 +245,7 @@ fun MessageItem(
         }
     }
 
-    MessageContent(
+    TextMessage(
         text = item.message,
         modifier = modifier.then(messageModifier),
         backgroundColor = backgroundColor,
@@ -244,7 +258,7 @@ fun MessageItem(
 }
 
 @Composable
-fun MessageContent(
+fun TextMessage(
     text: String,
     modifier: Modifier,
     backgroundColor: Color = MaterialTheme.colors.primary,
@@ -278,10 +292,11 @@ fun MessageContent(
 }
 
 @Composable
-fun EmojiItem(
-    item: Emoji,
+fun EmojiMessageItem(
+    item: Message.Emoji,
+    themeColor: Color,
     modifier: Modifier,
-    onEmojiAnimationEnd: (emoji: Emoji) -> Unit
+    onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
     val size = if (item.shouldAnimate) {
         // Animate from half the size of the emoji with the spring effect
@@ -298,29 +313,32 @@ fun EmojiItem(
         item.size
     }
 
-    Emoji(
-        resId = item.resId,
+    EmojiMessage(
+        id = item.id,
+        tint = if (item.id == THUMBS_UP) themeColor else null,
+        size = size,
+        rotation = 0f,
         modifier = modifier
             .padding(
                 start = 12.dp,
                 end = 12.dp,
                 top = 4.dp,
                 bottom = 4.dp
-            ).wrapContentSize(if(item.from == me) Alignment.CenterEnd else Alignment.CenterStart),
-        size = size,
-        rotation = 0f
+            ).wrapContentSize(if (item.from == me) Alignment.CenterEnd else Alignment.CenterStart)
     )
 }
 
 @Composable
-fun Emoji(
-    resId: Int,
+fun EmojiMessage(
+    id: String,
     size: Dp,
-    rotation: Float,
-    modifier: Modifier,
+    tint: Color? = null,
+    rotation: Float = 0f,
+    modifier: Modifier = Modifier,
 ) {
     CoilImage(
-        data = resId,
+        data = resIdFor(id) ?: "",
+        colorFilter = tint?.let { ColorFilter.tint(it) },
         modifier = modifier
             .size(size)
             .drawLayer(rotationZ = rotation)
