@@ -26,7 +26,6 @@ import androidx.compose.ui.viewinterop.viewModel
 import com.github.zsoltk.compose.router.Router
 import com.se7en.jetmessenger.R
 import com.se7en.jetmessenger.data.me
-import com.se7en.jetmessenger.data.models.Emoji
 import com.se7en.jetmessenger.data.models.Message
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.ToolbarAction
@@ -116,13 +115,13 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
             },
             bottomBar = {
                 BottomBar(
-                    onSendClick = { viewModel.sendMessage(user, it) },
+                    onSendClick = { viewModel.sendTextMessage(user, it) },
                     themeColor = themeColor,
                     emojiResId = emoji,
                     onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
                         if (transitionState[emojiSize] > 20.dp) {
-                            viewModel.sendEmoji(transitionState[emojiSize] * emojiScale, user, emoji)
+                            viewModel.sendEmoji(user, transitionState[emojiSize] * emojiScale, emoji)
                         }
                         emojiState = EmojiState.END
                     }
@@ -163,20 +162,23 @@ fun Messages(
     themeColor: Color = MaterialTheme.colors.primary,
     emojiResId: Int,
     transitionState: TransitionState,
-    onEmojiAnimationEnd: (emoji: Emoji) -> Unit
+    onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(items = messages) { index, item ->
 
-            if (item is Emoji) {
-                EmojiItem(item, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
-            } else {
-                // Was the previous message NOT from this user?
-                val isFirst = messages.getOrNull(index - 1)?.from != item.from
-                // Is the next message NOT from this user?
-                val isLast = messages.getOrNull(index + 1)?.from != item.from
+            when (item) {
+                is Message.Emoji -> {
+                    EmojiItem(item, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
+                }
+                is Message.Text -> {
+                    // Was the previous message NOT from this user?
+                    val isFirst = messages.getOrNull(index - 1)?.from != item.from
+                    // Is the next message NOT from this user?
+                    val isLast = messages.getOrNull(index + 1)?.from != item.from
 
-                MessageItem(item, isFirst, isLast, themeColor, Modifier.fillMaxWidth())
+                    TextMessageItem(item, isFirst, isLast, themeColor, Modifier.fillMaxWidth())
+                }
             }
         }
 
@@ -200,8 +202,8 @@ fun Messages(
 }
 
 @Composable
-fun MessageItem(
-    item: Message,
+fun TextMessageItem(
+    item: Message.Text,
     isFirst: Boolean,
     isLast: Boolean,
     themeColor: Color,
@@ -237,7 +239,7 @@ fun MessageItem(
         }
     }
 
-    MessageContent(
+    TextMessage(
         text = item.message,
         modifier = modifier.then(messageModifier),
         backgroundColor = backgroundColor,
@@ -250,7 +252,7 @@ fun MessageItem(
 }
 
 @Composable
-fun MessageContent(
+fun TextMessage(
     text: String,
     modifier: Modifier,
     backgroundColor: Color = MaterialTheme.colors.primary,
@@ -285,9 +287,9 @@ fun MessageContent(
 
 @Composable
 fun EmojiItem(
-    item: Emoji,
+    item: Message.Emoji,
     modifier: Modifier,
-    onEmojiAnimationEnd: (emoji: Emoji) -> Unit
+    onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
     val size = if (item.shouldAnimate) {
         // Animate from half the size of the emoji with the spring effect
