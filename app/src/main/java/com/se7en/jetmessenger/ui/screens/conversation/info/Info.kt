@@ -48,10 +48,7 @@ val Mute = NamedIcon("Mute", Icons.Rounded.Notifications)
 private const val cols = 4
 
 val themeColorsGridList = themeColors.toGridList(cols)
-val chatEmojiIdsGridList = listOf(
-    THUMBS_UP,
-    POO
-).toGridList(cols)
+val chatEmojiIdsGridList = chatEmojiIds.toGridList(cols)
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
