@@ -7,7 +7,7 @@ sealed class Message(val from: User) {
     class Text(val message: String, from: User) : Message(from)
 
     class Emoji(
-        val resId: Int,
+        val id: String,
         val size: Dp,
         var shouldAnimate: Boolean,
         from: User

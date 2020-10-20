@@ -23,18 +23,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.se7en.jetmessenger.R
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.NamedIcon
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleImage
-import com.se7en.jetmessenger.ui.screens.conversation.themeColors
-import com.se7en.jetmessenger.ui.screens.conversation.toGridList
+import com.se7en.jetmessenger.ui.screens.conversation.*
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import dev.chrisbanes.accompanist.coil.CoilImage
 
@@ -49,8 +48,9 @@ val Mute = NamedIcon("Mute", Icons.Rounded.Notifications)
 private const val cols = 4
 
 val themeColorsGridList = themeColors.toGridList(cols)
-val chatEmojisGridList = listOf(
-    R.drawable.thumbs_up, R.drawable.poo
+val chatEmojiIdsGridList = listOf(
+    THUMBS_UP,
+    POO
 ).toGridList(cols)
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
@@ -58,9 +58,9 @@ val chatEmojisGridList = listOf(
 fun Routing.Root.Conversation.Info.Content(
     user: User,
     themeColor: Color,
-    emojiResId: Int,
+    currentEmojiId: String,
     onColorSelected: (Color) -> Unit,
-    onEmojiSelected: (Int) -> Unit,
+    onEmojiSelected: (String) -> Unit,
     onBackPress: () -> Unit
 ) {
     var themeDialogVisible by remember { mutableStateOf(false) }
@@ -98,7 +98,8 @@ fun Routing.Root.Conversation.Info.Content(
                     onClick = { themeDialogVisible = true }
                 )
                 EmojiSelectorButton(
-                    currentEmojiId = emojiResId,
+                    currentEmojiId = currentEmojiId,
+                    themeColor = themeColor,
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     onClick = { emojiDialogVisible = true }
                 )
@@ -130,11 +131,12 @@ fun Routing.Root.Conversation.Info.Content(
                     onDismissRequest = { emojiDialogVisible = false }
                 ) {
                     Grid(
-                        chatEmojisGridList,
+                        chatEmojiIdsGridList,
                         modifier = Modifier.fillMaxWidth().wrapContentHeight()
-                    ) { resId ->
+                    ) { id ->
                         EmojiGridItem(
-                            emojiResId = resId,
+                            id = id,
+                            tint = if(id == THUMBS_UP) themeColor else null,
                             onSelected = {
                                 onEmojiSelected(it)
                                 emojiDialogVisible = false
@@ -203,7 +205,8 @@ fun ThemeSelectorButton(
 
 @Composable
 fun EmojiSelectorButton(
-    currentEmojiId: Int,
+    currentEmojiId: String,
+    themeColor: Color,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -216,7 +219,8 @@ fun EmojiSelectorButton(
         Text(text = "Emoji", style = MaterialTheme.typography.subtitle1)
 
         CoilImage(
-            data = currentEmojiId,
+            data = resIdFor(currentEmojiId) ?: "",
+            colorFilter = if(currentEmojiId == THUMBS_UP) ColorFilter.tint(themeColor) else null,
             modifier = Modifier.size(24.dp)
         )
     }
@@ -304,17 +308,19 @@ fun ColorGridItem(
 
 @Composable
 fun EmojiGridItem(
-    emojiResId: Int?,
+    id: String?,
+    tint: Color? = null,
     size: Dp = 45.dp,
-    onSelected: (Int) -> Unit
+    onSelected: (String) -> Unit
 ) {
     CoilImage(
-        data = emojiResId ?: "",
+        data = resIdFor(id) ?: "",
+        colorFilter = tint?.let { ColorFilter.tint(it) },
         modifier = Modifier
             .size(size)
             .clickable(
-                enabled = emojiResId != null,
-                onClick = { emojiResId?.let(onSelected) }
+                enabled = id != null,
+                onClick = { id?.let(onSelected) }
             )
     )
 }

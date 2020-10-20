@@ -1,7 +1,11 @@
 package com.se7en.jetmessenger.ui.screens.conversation
 
 import androidx.compose.ui.graphics.Color
+import com.se7en.jetmessenger.R
 import com.se7en.jetmessenger.ui.theme.messengerBlue
+
+const val THUMBS_UP = "thumbs_up"
+const val POO = "poo"
 
 val themeColors = listOf(
     messengerBlue,
@@ -21,6 +25,14 @@ val themeColors = listOf(
     Color(red = 255, green = 92, blue = 161),
     Color(red = 166, green = 150, blue = 199),
 )
+
+fun resIdFor(emojiId: String?): Int? {
+    return when(emojiId) {
+        THUMBS_UP -> R.drawable.thumbs_up
+        POO -> R.drawable.poo
+        else -> null
+    }
+}
 
 fun <T> List<T>.toGridList(cols: Int): List<List<T?>> =
     chunked(cols).map { row ->

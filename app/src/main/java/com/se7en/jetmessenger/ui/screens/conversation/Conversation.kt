@@ -19,12 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.viewModel
 import com.github.zsoltk.compose.router.Router
-import com.se7en.jetmessenger.R
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.Message
 import com.se7en.jetmessenger.ui.Routing
@@ -72,7 +72,7 @@ fun createEmojiTransition(): TransitionDefinition<EmojiState> {
 
             rotation using repeatable(
                 // 30 iterations of 100 ms = 3 seconds
-                iterations = 3000/100,
+                iterations = 3000 / 100,
                 animation = keyframes {
                     durationMillis = 100
                     -3f at 0
@@ -90,7 +90,7 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
     val viewModel: ConversationViewModel = viewModel()
     val messages = viewModel.messages.getValue(user)
     var themeColor by remember { mutableStateOf(messengerBlue) }
-    var emoji by remember { mutableStateOf(R.drawable.thumbs_up) }
+    var currentEmoji by remember { mutableStateOf(THUMBS_UP) }
 
     var emojiState by remember { mutableStateOf(EmojiState.END) }
     val transitionState = transition(
@@ -106,7 +106,8 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                     onActionClick = { action ->
                         when (action) {
                             ToolbarAction.Info -> infoBackStack.push(Info(visible = true))
-                            else -> {}
+                            else -> {
+                            }
                         }
                     },
                     onBackPress = onBackPress,
@@ -117,11 +118,15 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                 BottomBar(
                     onSendClick = { viewModel.sendTextMessage(user, it) },
                     themeColor = themeColor,
-                    emojiResId = emoji,
+                    emojiId = currentEmoji,
                     onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
                         if (transitionState[emojiSize] > 20.dp) {
-                            viewModel.sendEmoji(user, transitionState[emojiSize] * emojiScale, emoji)
+                            viewModel.sendEmoji(
+                                user,
+                                currentEmoji,
+                                size = transitionState[emojiSize] * emojiScale,
+                            )
                         }
                         emojiState = EmojiState.END
                     }
@@ -136,7 +141,7 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
                     messages = messages,
                     modifier = Modifier.fillMaxWidth().padding(0.dp, 16.dp),
                     themeColor = themeColor,
-                    emojiResId = emoji,
+                    emojiId = currentEmoji,
                     transitionState = transitionState,
                     onEmojiAnimationEnd = { it.shouldAnimate = false }
                 )
@@ -146,9 +151,9 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
         infoBackStack.last().Content(
             user,
             themeColor = themeColor,
-            emojiResId = emoji,
+            currentEmojiId = currentEmoji,
             onColorSelected = { themeColor = it },
-            onEmojiSelected = { emoji = it },
+            onEmojiSelected = { currentEmoji = it },
             onBackPress = { infoBackStack.pop() }
         )
     }
@@ -160,7 +165,7 @@ fun Messages(
     messages: List<Message>,
     modifier: Modifier = Modifier,
     themeColor: Color = MaterialTheme.colors.primary,
-    emojiResId: Int,
+    emojiId: String,
     transitionState: TransitionState,
     onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
@@ -169,7 +174,7 @@ fun Messages(
 
             when (item) {
                 is Message.Emoji -> {
-                    EmojiItem(item, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
+                    EmojiMessageItem(item, themeColor, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
                 }
                 is Message.Text -> {
                     // Was the previous message NOT from this user?
@@ -184,8 +189,9 @@ fun Messages(
 
         item {
             // This acts as a placeholder while the emoji button is pressed
-            Emoji(
-                resId = emojiResId,
+            EmojiMessage(
+                id = emojiId,
+                tint = if(emojiId == THUMBS_UP) themeColor else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
@@ -286,8 +292,9 @@ fun TextMessage(
 }
 
 @Composable
-fun EmojiItem(
+fun EmojiMessageItem(
     item: Message.Emoji,
+    themeColor: Color,
     modifier: Modifier,
     onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
@@ -306,29 +313,32 @@ fun EmojiItem(
         item.size
     }
 
-    Emoji(
-        resId = item.resId,
+    EmojiMessage(
+        id = item.id,
+        tint = if (item.id == THUMBS_UP) themeColor else null,
+        size = size,
+        rotation = 0f,
         modifier = modifier
             .padding(
                 start = 12.dp,
                 end = 12.dp,
                 top = 4.dp,
                 bottom = 4.dp
-            ).wrapContentSize(if(item.from == me) Alignment.CenterEnd else Alignment.CenterStart),
-        size = size,
-        rotation = 0f
+            ).wrapContentSize(if (item.from == me) Alignment.CenterEnd else Alignment.CenterStart)
     )
 }
 
 @Composable
-fun Emoji(
-    resId: Int,
+fun EmojiMessage(
+    id: String,
     size: Dp,
-    rotation: Float,
-    modifier: Modifier,
+    tint: Color? = null,
+    rotation: Float = 0f,
+    modifier: Modifier = Modifier,
 ) {
     CoilImage(
-        data = resId,
+        data = resIdFor(id) ?: "",
+        colorFilter = tint?.let { ColorFilter.tint(it) },
         modifier = modifier
             .size(size)
             .drawLayer(rotationZ = rotation)
