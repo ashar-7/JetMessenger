@@ -24,7 +24,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.viewModel
 import androidx.ui.tooling.preview.Preview
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.Story
@@ -36,7 +35,6 @@ import com.se7en.jetmessenger.ui.components.CircleBorderAvatar
 import com.se7en.jetmessenger.ui.components.SearchButton
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
-import com.se7en.jetmessenger.viewmodels.StoryViewModel
 import dev.chrisbanes.accompanist.coil.CoilImage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -44,13 +42,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @Composable
 fun Routing.BottomNav.People.Content(
     users: List<User>,
+    stories: List<Story>,
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit,
     onStoryClick: (story: Story) -> Unit
 ) {
-    val storyViewModel: StoryViewModel = viewModel()
-    val stories: List<Story> = storyViewModel.getStories(users)
-
     LazyColumn {
         item {
             SearchButton(
@@ -64,12 +60,7 @@ fun Routing.BottomNav.People.Content(
                 )
             )
         }
-        item {
-            StoriesRow(stories) { story ->
-                storyViewModel.updateStoryStatus(story.user, StoryStatus.AVAILABLE_SEEN)
-                onStoryClick(story)
-            }
-        }
+        item { StoriesRow(stories, onStoryClick) }
         item {
             ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.disabled) {
                 Text(
@@ -164,9 +155,7 @@ fun StoryItem(
         shape = RoundedCornerShape(4.dp),
         modifier = modifier
             .size(width, height)
-            .clickable(onClick = {
-                onStoryClick(story)
-            })
+            .clickable(onClick = { onStoryClick(story) })
     ) {
         Box {
             CoilImage(
