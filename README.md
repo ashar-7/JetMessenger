@@ -1,7 +1,7 @@
 # JetMessenger
 Facebook Messenger clone built with Jetpack Compose
 
-<img src="screenshots/Demo.gif" width=200 />
+<img src="screenshots/demo.gif" width=200 />
 
 ## Screenshots
 <img src="screenshots/light_chats.png" width=200 /> <img src="screenshots/dark_chats.png" width=200 />
