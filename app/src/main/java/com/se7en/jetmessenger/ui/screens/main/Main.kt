@@ -13,9 +13,11 @@ import androidx.compose.ui.viewinterop.viewModel
 import com.github.zsoltk.compose.router.BackStack
 import com.github.zsoltk.compose.router.Router
 import com.se7en.jetmessenger.data.models.Story
+import com.se7en.jetmessenger.data.models.StoryStatus
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.screens.main.story.Content
+import com.se7en.jetmessenger.viewmodels.StoryViewModel
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -31,11 +33,13 @@ fun Routing.Root.Main.Content(
     onSearchClick: () -> Unit
 ) {
     val viewModel: UsersViewModel = viewModel()
+    val storyViewModel: StoryViewModel = viewModel()
     val users: List<User> by viewModel.users.collectAsState()
 
     Router(defaultRouting = defaultRouting) { mainBackStack ->
         Router(defaultRouting = Story(visible = false)) { storyBackStack ->
 
+            val stories: List<Story> = storyViewModel.getStories(users)
             var currentStory: Story? by remember { mutableStateOf(null) }
 
             Scaffold(
@@ -65,9 +69,10 @@ fun Routing.Root.Main.Content(
                             )
                             is Routing.BottomNav.People -> routing.Content(
                                 users,
+                                stories,
                                 onChatClick,
                                 onSearchClick,
-                                { story ->
+                                onStoryClick = { story ->
                                     currentStory = story
                                     storyBackStack.push(Story(visible = true))
                                 }
@@ -77,7 +82,21 @@ fun Routing.Root.Main.Content(
                 }
             }
 
-            storyBackStack.last().Content(currentStory, onClose = { storyBackStack.pop() })
+            storyBackStack.last().Content(
+                currentStory,
+                onStorySeen = { story ->
+                    storyViewModel.updateStoryStatus(story.user, StoryStatus.AVAILABLE_SEEN)
+                },
+                onNext = { story ->
+                    // Get the next story if it exists, otherwise close the story screen
+                    val index = stories.indexOf(story)
+                    val nextStory = stories.getOrNull(index + 1)
+                    if(nextStory != null) currentStory = nextStory else storyBackStack.pop()
+                },
+                onClose = {
+                    storyBackStack.pop()
+                }
+            )
         }
     }
 }
