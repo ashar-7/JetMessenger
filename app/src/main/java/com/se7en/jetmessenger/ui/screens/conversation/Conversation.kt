@@ -93,8 +93,9 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
     var currentEmoji by remember { mutableStateOf(THUMBS_UP) }
 
     var emojiState by remember { mutableStateOf(EmojiState.END) }
+    val definition by remember(emojiState) { mutableStateOf(createEmojiTransition()) }
     val transitionState = transition(
-        definition = createEmojiTransition(),
+        definition = definition,
         initState = emojiState,
         toState = EmojiState.END
     )
