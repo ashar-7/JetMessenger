@@ -1,12 +1,9 @@
 package com.se7en.jetmessenger.ui.components
 
-import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.contentColorFor
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -30,9 +27,11 @@ fun SearchButton(
         modifier = modifier,
         onClick = onClick,
         shape = CircleShape,
-        backgroundColor = backgroundColor,
-        contentColor = contentColor,
-        elevation = elevation
+        colors = ButtonConstants.defaultButtonColors(
+            backgroundColor = backgroundColor,
+            contentColor = contentColor
+        ),
+        elevation = ButtonConstants.defaultElevation(elevation)
     ) {
         Icon(Icons.Filled.Search)
         Text(text = "Search", style = typography.body1)
