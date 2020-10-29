@@ -61,8 +61,8 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-beta01'
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.0-beta01"
 
-    implementation 'dev.chrisbanes.accompanist:accompanist-coil:0.3.1'
-    implementation 'com.github.zsoltk:compose-router:0.19.0'
+    implementation 'dev.chrisbanes.accompanist:accompanist-coil:0.3.2'
+    implementation 'com.github.zsoltk:compose-router:0.21.0'
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
