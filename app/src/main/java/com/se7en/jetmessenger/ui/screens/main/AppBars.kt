@@ -11,23 +11,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 import com.se7en.jetmessenger.data.me
-import com.se7en.jetmessenger.ui.Routing
-import com.se7en.jetmessenger.ui.ToolbarAction
 import com.se7en.jetmessenger.ui.components.CircleImage
+import com.se7en.jetmessenger.ui.screens.Routing
+import com.se7en.jetmessenger.ui.screens.ToolbarAction
 
 @Composable
-fun Routing.Root.Main.TopBar(
-    currentRouting: Routing.BottomNav,
+fun Routing.Main.TopBar(
+    currentRouting: Routing.Main.BottomNav,
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
     onActionClick: (action: ToolbarAction) -> Unit = { }
 ) {
     TopAppBar(
         title = {
-            Text(
-                text = currentRouting.label,
-                style = MaterialTheme.typography.h6
-            )
+            Text(text = currentRouting.label, style = MaterialTheme.typography.h6)
         },
         navigationIcon = {
             IconButton(onClick = {}) {
@@ -51,24 +48,22 @@ fun Routing.Root.Main.TopBar(
 }
 
 @Composable
-fun Routing.Root.Main.BottomBar(
-    currentRouting: Routing.BottomNav,
+fun Routing.Main.BottomBar(
+    currentRouting: Routing.Main.BottomNav,
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
-    onSelected: (routing: Routing.BottomNav) -> Unit = { }
+    onSelected: (routing: Routing.Main.BottomNav) -> Unit = { }
 ) {
     BottomNavigation(
         backgroundColor = backgroundColor,
         contentColor = contentColor,
         elevation = if (isSystemInDarkTheme()) 0.dp else 4.dp
     ) {
-        routings.forEach { routing ->
+        bottomNavRoutings.forEach { routing ->
             val selected = routing == currentRouting
 
             BottomNavigationItem(
-                label = {
-                    Text(text = routing.label)
-                },
+                label = { Text(text = routing.label) },
                 icon = { Icon(routing.icon) },
                 selected = selected,
                 onClick = { onSelected(routing) },
@@ -83,11 +78,11 @@ fun Routing.Root.Main.BottomBar(
 @Preview
 @Composable
 fun MainTopBarPreview() {
-    Routing.Root.Main().TopBar(Routing.BottomNav.Chats)
+    Routing.Main.TopBar(Routing.Main.BottomNav.Chats)
 }
 
 @Preview
 @Composable
 fun MainBottomBarPreview() {
-    Routing.Root.Main().BottomBar(Routing.BottomNav.Chats)
+    Routing.Main.BottomBar(Routing.Main.BottomNav.Chats)
 }

@@ -1,5 +1,6 @@
 package com.se7en.jetmessenger.ui.screens.conversation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.DpPropKey
 import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.core.*
@@ -23,16 +24,17 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.viewModel
-import com.github.zsoltk.compose.router.Router
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.Message
-import com.se7en.jetmessenger.ui.Routing
-import com.se7en.jetmessenger.ui.ToolbarAction
+import com.se7en.jetmessenger.data.models.emptyUser
+import com.se7en.jetmessenger.ui.backPressHandler
+import com.se7en.jetmessenger.ui.screens.Routing
+import com.se7en.jetmessenger.ui.screens.ToolbarAction
 import com.se7en.jetmessenger.ui.screens.conversation.info.Content
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.viewmodels.ConversationViewModel
+import com.se7en.jetmessenger.viewmodels.UsersViewModel
 import dev.chrisbanes.accompanist.coil.CoilImage
 
 val emojiSize = DpPropKey()
@@ -47,6 +49,7 @@ enum class EmojiState {
     START, END
 }
 
+@SuppressLint("Range")
 fun createEmojiTransition(): TransitionDefinition<EmojiState> {
     return transitionDefinition {
         state(EmojiState.START) {
@@ -85,10 +88,15 @@ fun createEmojiTransition(): TransitionDefinition<EmojiState> {
 }
 
 @Composable
-fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
+fun Routing.Conversation.Content(
+    usersViewModel: UsersViewModel,
+    conversationViewModel: ConversationViewModel,
+    userId: String,
+    onBackPress: () -> Unit
+) {
+    val user by usersViewModel.getUser(userId).collectAsState(emptyUser())
+    val messages = conversationViewModel.messages.getValue(user)
 
-    val viewModel: ConversationViewModel = viewModel()
-    val messages = viewModel.messages.getValue(user)
     var themeColor by remember { mutableStateOf(messengerBlue) }
     var currentEmoji by remember { mutableStateOf(THUMBS_UP) }
 
@@ -100,15 +108,21 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
         toState = EmojiState.END
     )
 
-    Router(defaultRouting = Info(visible = false)) { infoBackStack ->
+    var infoVisible by remember { mutableStateOf(false) }
+    backPressHandler(
+        enabled = infoVisible,
+        onBackPressed = { infoVisible = false }
+    )
+
+    Box {
         Scaffold(
             topBar = {
                 TopBar(
+                    user,
                     onActionClick = { action ->
                         when (action) {
-                            ToolbarAction.Info -> infoBackStack.push(Info(visible = true))
-                            else -> {
-                            }
+                            ToolbarAction.Info -> infoVisible = true
+                            else -> { }
                         }
                     },
                     onBackPress = onBackPress,
@@ -117,13 +131,13 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
             },
             bottomBar = {
                 BottomBar(
-                    onSendClick = { viewModel.sendTextMessage(user, it) },
+                    onSendClick = { conversationViewModel.sendTextMessage(user, it) },
                     themeColor = themeColor,
                     emojiId = currentEmoji,
                     onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
                         if (transitionState[emojiSize] > 20.dp) {
-                            viewModel.sendEmoji(
+                            conversationViewModel.sendEmoji(
                                 user,
                                 currentEmoji,
                                 size = transitionState[emojiSize] * emojiScale,
@@ -149,13 +163,15 @@ fun Routing.Root.Conversation.Content(onBackPress: () -> Unit) {
             }
         }
 
-        infoBackStack.last().Content(
-            user,
+        // TODO: Maybe switch to compose-navigation once it supports transitions?
+        Routing.Conversation.Info.Content(
+            visible = infoVisible,
+            user = user,
             themeColor = themeColor,
             currentEmojiId = currentEmoji,
             onColorSelected = { themeColor = it },
             onEmojiSelected = { currentEmoji = it },
-            onBackPress = { infoBackStack.pop() }
+            onBackPress = { infoVisible = !infoVisible }
         )
     }
 }

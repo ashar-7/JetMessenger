@@ -22,11 +22,11 @@ import androidx.ui.tooling.preview.Preview
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.StoryStatus
 import com.se7en.jetmessenger.data.models.User
-import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
 import com.se7en.jetmessenger.ui.components.CircleBorderAvatar
 import com.se7en.jetmessenger.ui.components.SearchButton
 import com.se7en.jetmessenger.ui.components.UserAvatarWithTitle
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.ui.theme.typography
@@ -35,7 +35,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
 @Composable
-fun Routing.BottomNav.Chats.Content(
+fun Routing.Main.BottomNav.Chats.Content(
     users: List<User>,
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit

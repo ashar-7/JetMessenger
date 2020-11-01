@@ -14,26 +14,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.viewModel
 import com.se7en.jetmessenger.data.models.User
-import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
 import com.se7en.jetmessenger.ui.components.SubHeading
 import com.se7en.jetmessenger.ui.components.UserAvatarWithTitle
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
 
 // TODO: No results
 @OptIn(ExperimentalLazyDsl::class)
 @Composable
-fun Routing.Root.Search.Content(
+fun Routing.Search.Content(
+    usersViewModel: UsersViewModel,
     onBackPress: () -> Unit,
     onUserClick: (user: User) -> Unit
 ) {
-    val viewModel: UsersViewModel = viewModel()
     val (query, setQuery) = remember { mutableStateOf("") }
-    val results: List<User> by viewModel.searchUsers(query).collectAsState(listOf())
-    val recentSearches: List<User> = viewModel.recentSearches.reversed()
-    val suggestedSearches: List<User> by viewModel.suggestedSearches.collectAsState(listOf())
+    val results: List<User> by usersViewModel.searchUsers(query).collectAsState(listOf())
+    val recentSearches: List<User> = usersViewModel.recentSearches.reversed()
+    val suggestedSearches: List<User> by usersViewModel.suggestedSearches.collectAsState(listOf())
 
     Scaffold(
         topBar = {
@@ -61,7 +60,7 @@ fun Routing.Root.Search.Content(
                         isOnline = index % 3 == 0,
                         modifier = Modifier.clickable(onClick = {
                             onUserClick(user)
-                            viewModel.addToRecentSearches(user)
+                            usersViewModel.addToRecentSearches(user)
                         }),
                     )
                 }

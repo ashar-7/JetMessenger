@@ -28,14 +28,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 import com.se7en.jetmessenger.data.me
-import com.se7en.jetmessenger.ui.Routing
-import com.se7en.jetmessenger.ui.ToolbarAction
+import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.components.CircleImage
+import com.se7en.jetmessenger.ui.screens.Routing
+import com.se7en.jetmessenger.ui.screens.ToolbarAction
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import dev.chrisbanes.accompanist.coil.CoilImage
 
 @Composable
-fun Routing.Root.Conversation.TopBar(
+fun Routing.Conversation.TopBar(
+    user: User,
     onActionClick: (action: ToolbarAction) -> Unit,
     onBackPress: () -> Unit,
     backgroundColor: Color = MaterialTheme.colors.surface,
@@ -79,7 +81,7 @@ fun Routing.Root.Conversation.TopBar(
     ExperimentalAnimationApi::class
 )
 @Composable
-fun Routing.Root.Conversation.BottomBar(
+fun Routing.Conversation.BottomBar(
     emojiId: String,
     themeColor: Color = MaterialTheme.colors.primary,
     backgroundColor: Color = MaterialTheme.colors.surface,
@@ -198,7 +200,8 @@ fun Routing.Root.Conversation.BottomBar(
 @Preview
 @Composable
 fun ConversationTopBarPreview() {
-    Routing.Root.Conversation(me).TopBar(
+    Routing.Conversation.TopBar(
+        me,
         {},
         {}
     )
@@ -207,7 +210,7 @@ fun ConversationTopBarPreview() {
 @Preview
 @Composable
 fun ConversationBottomBarPreview() {
-    Routing.Root.Conversation(me).BottomBar(
+    Routing.Conversation.BottomBar(
         THUMBS_UP,
         onSendClick = {},
         onEmojiPressStart = {},

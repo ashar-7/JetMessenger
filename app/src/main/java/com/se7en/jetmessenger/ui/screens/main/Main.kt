@@ -1,7 +1,7 @@
 package com.se7en.jetmessenger.ui.screens.main
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -10,12 +10,12 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.viewModel
-import com.github.zsoltk.compose.router.BackStack
-import com.github.zsoltk.compose.router.Router
+import androidx.navigation.compose.*
 import com.se7en.jetmessenger.data.models.Story
 import com.se7en.jetmessenger.data.models.StoryStatus
 import com.se7en.jetmessenger.data.models.User
-import com.se7en.jetmessenger.ui.Routing
+import com.se7en.jetmessenger.ui.backPressHandler
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.screens.main.story.Content
 import com.se7en.jetmessenger.viewmodels.StoryViewModel
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
@@ -28,88 +28,98 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
     ExperimentalMaterialApi::class
 )
 @Composable
-fun Routing.Root.Main.Content(
+fun Routing.Main.Content(
+    usersViewModel: UsersViewModel,
     onChatClick: (user: User) -> Unit,
     onSearchClick: () -> Unit
 ) {
-    val viewModel: UsersViewModel = viewModel()
+    val bottomNavController = rememberNavController()
+    val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
+    fun currentRouting(): Routing.Main.BottomNav? {
+        val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
+        return bottomNavRoutings.find { it.route == currentRoute }
+    }
+
+    val users: List<User> by usersViewModel.users.collectAsState()
+
     val storyViewModel: StoryViewModel = viewModel()
-    val users: List<User> by viewModel.users.collectAsState()
+    val stories: List<Story> = storyViewModel.getStories(users)
+    var storyVisible by remember { mutableStateOf(false) }
+    var currentStory: Story? by remember { mutableStateOf(null) }
+    backPressHandler(
+        enabled = storyVisible,
+        onBackPressed = { storyVisible = false }
+    )
 
-    Router(defaultRouting = defaultRouting) { mainBackStack ->
-        Router(defaultRouting = Story(visible = false)) { storyBackStack ->
-
-            val stories: List<Story> = storyViewModel.getStories(users)
-            var currentStory: Story? by remember { mutableStateOf(null) }
-
-            Scaffold(
-                topBar = {
-                    TopBar(
-                        currentRouting = mainBackStack.last(),
-                        onActionClick = { }
-                    )
-                },
-                bottomBar = {
+    Box {
+        Scaffold(
+            topBar = {
+                currentRouting()?.let {
+                    TopBar(currentRouting = it, onActionClick = { })
+                }
+            },
+            bottomBar = {
+                currentRouting()?.let {
                     BottomBar(
-                        currentRouting = mainBackStack.last(),
-                        onSelected = { onBottomNavItemSelected(it, mainBackStack) }
+                        currentRouting = it,
+                        onSelected = { selectedRouting ->
+                            if (it.route != selectedRouting.route) {
+                                if(selectedRouting is Routing.Main.BottomNav.Chats)
+                                    bottomNavController.popBackStack(bottomNavController.graph.startDestination, false)
+                                else
+                                    bottomNavController.navigate(selectedRouting.route)
+                            }
+                        }
                     )
                 }
-            ) { innerPadding ->
-                Surface(
-                    modifier = Modifier.padding(innerPadding),
-                    color = MaterialTheme.colors.surface
+            }
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier.padding(innerPadding),
+                color = MaterialTheme.colors.surface
+            ) {
+                // TODO: fix BottomNav state when navigating back from another screen (like navigating back from Conversation to Main)
+                NavHost(
+                    navController = bottomNavController,
+                    startDestination = Routing.Main.BottomNav.Chats.route
                 ) {
-                    Crossfade(current = mainBackStack.last()) { routing ->
-                        when (routing) {
-                            is Routing.BottomNav.Chats -> routing.Content(
-                                users,
-                                onChatClick,
-                                onSearchClick
-                            )
-                            is Routing.BottomNav.People -> routing.Content(
-                                users,
-                                stories,
-                                onChatClick,
-                                onSearchClick,
-                                onStoryClick = { story ->
-                                    currentStory = story
-                                    storyBackStack.push(Story(visible = true))
-                                }
-                            )
-                        }
+                    composable(Routing.Main.BottomNav.Chats.route) {
+                        Routing.Main.BottomNav.Chats.Content(
+                            users,
+                            onChatClick,
+                            onSearchClick
+                        )
+                    }
+
+                    composable(Routing.Main.BottomNav.People.route) {
+                        Routing.Main.BottomNav.People.Content(
+                            users,
+                            stories,
+                            onChatClick,
+                            onSearchClick,
+                            onStoryClick = { story ->
+                                currentStory = story
+                                storyVisible = true
+                            }
+                        )
                     }
                 }
             }
-
-            storyBackStack.last().Content(
-                currentStory,
-                onStorySeen = { story ->
-                    storyViewModel.updateStoryStatus(story.user, StoryStatus.AVAILABLE_SEEN)
-                },
-                onNext = { story ->
-                    // Get the next story if it exists, otherwise close the story screen
-                    val index = stories.indexOf(story)
-                    val nextStory = stories.getOrNull(index + 1)
-                    if(nextStory != null) currentStory = nextStory else storyBackStack.pop()
-                },
-                onClose = {
-                    storyBackStack.pop()
-                }
-            )
         }
-    }
-}
 
-fun onBottomNavItemSelected(routing: Routing.BottomNav, backStack: BackStack<Routing.BottomNav>) {
-    when(routing) {
-        is Routing.BottomNav.Chats ->
-            if(backStack.last() !is Routing.BottomNav.Chats) {
-                backStack.newRoot(routing)
-            }
-        is Routing.BottomNav.People ->
-            if(backStack.last() !is Routing.BottomNav.People) {
-                backStack.push(routing)
-            }
+        // TODO: Maybe switch to compose-navigation once it supports transitions?
+        Routing.Main.Story.Content(
+            storyVisible,
+            currentStory,
+            onStorySeen = { story ->
+                storyViewModel.updateStoryStatus(story.user, StoryStatus.AVAILABLE_SEEN)
+            },
+            onNext = { story ->
+                // Get the next story if it exists, otherwise close the story screen
+                val index = stories.indexOf(story)
+                currentStory = stories.getOrNull(index + 1)
+            },
+            onClose = { storyVisible = false }
+        )
     }
 }

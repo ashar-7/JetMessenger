@@ -1,6 +1,5 @@
 package com.se7en.jetmessenger.ui.screens.main.story
 
-import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.ManualAnimationClock
 import androidx.compose.animation.core.tween
@@ -39,7 +38,6 @@ class StoryAnimationClock(private val totalMillis: Long) {
 
         // schedule new task
         task = timerTask {
-            Log.d("Timer", "${clock.clockTimeMillis}")
             if(!isPaused)
                 clock.clockTimeMillis += 1
 

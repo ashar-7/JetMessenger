@@ -29,10 +29,10 @@ import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.Story
 import com.se7en.jetmessenger.data.models.StoryStatus
 import com.se7en.jetmessenger.data.models.User
-import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleBadgeAvatar
 import com.se7en.jetmessenger.ui.components.CircleBorderAvatar
 import com.se7en.jetmessenger.ui.components.SearchButton
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import dev.chrisbanes.accompanist.coil.CoilImage
@@ -40,7 +40,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
 @Composable
-fun Routing.BottomNav.People.Content(
+fun Routing.Main.BottomNav.People.Content(
     users: List<User>,
     stories: List<Story>,
     onChatClick: (user: User) -> Unit,

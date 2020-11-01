@@ -2,64 +2,78 @@ package com.se7en.jetmessenger.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.ui.platform.setContent
-import com.github.zsoltk.compose.backpress.AmbientBackPressHandler
-import com.github.zsoltk.compose.backpress.BackPressHandler
-import com.github.zsoltk.compose.router.Router
+import androidx.compose.ui.viewinterop.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.*
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.screens.conversation.Content
 import com.se7en.jetmessenger.ui.screens.main.Content
 import com.se7en.jetmessenger.ui.screens.search.Content
 import com.se7en.jetmessenger.ui.theme.JetMessengerTheme
+import com.se7en.jetmessenger.viewmodels.ConversationViewModel
+import com.se7en.jetmessenger.viewmodels.UsersViewModel
 
 class MainActivity : AppCompatActivity() {
-
-    private val backPressHandler = BackPressHandler()
 
     @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            JetMessengerTheme {
-                Providers(AmbientBackPressHandler provides backPressHandler) {
-                    Root(Routing.Root.Main())
+            Providers(AmbientBackPressedDispatcher provides this) {
+                JetMessengerTheme {
+                    Root()
                 }
             }
-        }
-    }
-
-    override fun onBackPressed() {
-        if (!backPressHandler.handle()) {
-            super.onBackPressed()
         }
     }
 }
 
 @ExperimentalAnimationApi
 @Composable
-fun Root(defaultRouting: Routing.Root) {
-    Router(defaultRouting = defaultRouting) { backStack ->
-        Crossfade(current = backStack.last()) { routing ->
-            when(routing) {
-                is Routing.Root.Main -> routing.Content(
-                    onChatClick = { user ->
-                        backStack.push(Routing.Root.Conversation(user))
-                    },
-                    onSearchClick = { backStack.push(Routing.Root.Search) },
+fun Root() {
+    val navController = rememberNavController()
+    val usersViewModel: UsersViewModel = viewModel()
+    val conversationViewModel: ConversationViewModel = viewModel()
+
+    NavHost(navController = navController, startDestination = Routing.Main.route) {
+        composable(Routing.Main.route) {
+            Routing.Main.Content(
+                usersViewModel,
+                onChatClick = { user ->
+                    navController.navigate("${Routing.Conversation.route}/${user.id}")
+                },
+                onSearchClick = { navController.navigate(Routing.Search.route) }
+            )
+        }
+
+        composable(
+            "${Routing.Conversation.route}/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            backStackEntry.arguments?.getString("userId")?.let { userId ->
+                Routing.Conversation.Content(
+                    usersViewModel,
+                    conversationViewModel,
+                    userId = userId,
+                    onBackPress = { navController.popBackStack() }
                 )
-                is Routing.Root.Conversation -> routing.Content(onBackPress = { backStack.pop() })
-                is Routing.Root.Search -> routing.Content(
-                    onBackPress = { backStack.pop() },
-                    onUserClick = { user ->
-                        backStack.push(Routing.Root.Conversation(user))
-                    }
-                )
-                is Routing.Root.Settings -> Text(text = "settings")
             }
         }
+
+        composable(Routing.Search.route) {
+            Routing.Search.Content(
+                usersViewModel,
+                onBackPress = { navController.popBackStack() },
+                onUserClick = { user ->
+                    navController.navigate("${Routing.Conversation.route}/${user.id}")
+                }
+            )
+        }
+
+        composable(Routing.Settings.route) {}
     }
 }

@@ -21,12 +21,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.se7en.jetmessenger.data.models.Story
-import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleImage
+import com.se7en.jetmessenger.ui.screens.Routing
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Routing.Root.Main.Story.TopBar(
+fun Routing.Main.Story.TopBar(
     story: Story,
     progress: Float,
     visible: Boolean,
