@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.gesture.pressIndicatorGestureFilter
 import androidx.compose.ui.layout.ContentScale
 import com.se7en.jetmessenger.data.models.Story
-import com.se7en.jetmessenger.ui.Routing
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.theme.rememberDominantColorState
 import com.se7en.jetmessenger.ui.theme.verticalGradient
 import dev.chrisbanes.accompanist.coil.CoilImage
@@ -24,7 +24,8 @@ import dev.chrisbanes.accompanist.coil.CoilImage
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Routing.Root.Main.Story.Content(
+fun Routing.Main.Story.Content(
+    visible: Boolean,
     story: Story?,
     onStorySeen: (Story) -> Unit,
     onNext: (Story) -> Unit,

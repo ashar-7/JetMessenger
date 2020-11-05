@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface UserApiService {
 
-    @GET("?inc=name,picture")
+    @GET("?inc=name,picture,phone")
     suspend fun getUsers(
         @Query("results") count: Int
     ): UserDataWrapper

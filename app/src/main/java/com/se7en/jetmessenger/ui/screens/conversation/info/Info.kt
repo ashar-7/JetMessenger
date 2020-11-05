@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.NamedIcon
-import com.se7en.jetmessenger.ui.Routing
 import com.se7en.jetmessenger.ui.components.CircleImage
+import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.screens.conversation.*
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import dev.chrisbanes.accompanist.coil.CoilImage
@@ -51,7 +51,8 @@ val chatEmojiIdsGridList = chatEmojiIds.toGridList(cols)
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun Routing.Root.Conversation.Info.Content(
+fun Routing.Conversation.Info.Content(
+    visible: Boolean,
     user: User,
     themeColor: Color,
     currentEmojiId: String,

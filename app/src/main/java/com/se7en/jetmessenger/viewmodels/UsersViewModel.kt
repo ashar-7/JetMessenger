@@ -6,9 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.se7en.jetmessenger.data.UserApiService
 import com.se7en.jetmessenger.data.models.User
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -20,7 +18,7 @@ class UsersViewModel: ViewModel() {
     private val _users by lazy {
         MutableStateFlow<List<User>>(listOf()).also { usersFlow ->
             viewModelScope.launch {
-                usersFlow.value = getUsers(count = 20)
+                usersFlow.value = fetchUsers(count = 20)
             }
         }
     }
@@ -31,6 +29,10 @@ class UsersViewModel: ViewModel() {
         users.map {
             it.filterIndexed { index, _ -> index % 2 == 0 }
         }
+    }
+
+    fun getUser(userId: String): Flow<User> = users.mapNotNull {
+        it.find { user -> user.id == userId }
     }
 
     fun searchUsers(query: String) =
@@ -49,7 +51,7 @@ class UsersViewModel: ViewModel() {
         recentSearches.add(user)
     }
 
-    private suspend fun getUsers(count: Int): List<User> {
+    private suspend fun fetchUsers(count: Int): List<User> {
         val data = apiService.getUsers(count)
         return data.results
     }

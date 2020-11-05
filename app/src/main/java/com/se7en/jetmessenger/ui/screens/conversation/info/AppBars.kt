@@ -7,10 +7,10 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.se7en.jetmessenger.ui.Routing
+import com.se7en.jetmessenger.ui.screens.Routing
 
 @Composable
-fun Routing.Root.Conversation.Info.TopBar(
+fun Routing.Conversation.Info.TopBar(
     onBackPress: () -> Unit,
     onMoreClick: () -> Unit,
     backgroundColor: Color = MaterialTheme.colors.surface,

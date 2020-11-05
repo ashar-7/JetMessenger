@@ -17,11 +17,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.se7en.jetmessenger.ui.Routing
+import com.se7en.jetmessenger.ui.screens.Routing
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Routing.Root.Search.TopBar(
+fun Routing.Search.TopBar(
     onBackPress: () -> Unit,
     onSearch: (query: String) -> Unit,
     backgroundColor: Color = MaterialTheme.colors.surface,
