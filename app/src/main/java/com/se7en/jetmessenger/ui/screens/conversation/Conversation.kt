@@ -2,14 +2,17 @@ package com.se7en.jetmessenger.ui.screens.conversation
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.DpPropKey
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.core.*
 import androidx.compose.animation.transition
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -18,14 +21,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawShadow
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.Message
+import com.se7en.jetmessenger.data.models.Reaction
+import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.data.models.emptyUser
 import com.se7en.jetmessenger.ui.backPressHandler
 import com.se7en.jetmessenger.ui.screens.Routing
@@ -95,7 +103,6 @@ fun Routing.Conversation.Content(
     onBackPress: () -> Unit
 ) {
     val user by usersViewModel.getUser(userId).collectAsState(emptyUser())
-    val messages = conversationViewModel.messages.getValue(user)
 
     var themeColor by remember { mutableStateOf(messengerBlue) }
     var currentEmoji by remember { mutableStateOf(THUMBS_UP) }
@@ -153,7 +160,8 @@ fun Routing.Conversation.Content(
                 verticalArrangement = Arrangement.Bottom
             ) {
                 Messages(
-                    messages = messages,
+                    user = user,
+                    viewModel = conversationViewModel,
                     modifier = Modifier.fillMaxWidth().padding(0.dp, 16.dp),
                     themeColor = themeColor,
                     emojiId = currentEmoji,
@@ -179,29 +187,31 @@ fun Routing.Conversation.Content(
 @OptIn(ExperimentalLazyDsl::class)
 @Composable
 fun Messages(
-    messages: List<Message>,
+    user: User,
+    viewModel: ConversationViewModel,
     modifier: Modifier = Modifier,
     themeColor: Color = MaterialTheme.colors.primary,
     emojiId: String,
     transitionState: TransitionState,
     onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
-    LazyColumn(modifier = modifier) {
+    val messages = viewModel.messages.getValue(user)
+
+    LazyColumn(modifier = modifier.animateContentSize()) {
         itemsIndexed(items = messages) { index, item ->
 
-            when (item) {
-                is Message.Emoji -> {
-                    EmojiMessageItem(item, themeColor, Modifier.fillMaxWidth(), onEmojiAnimationEnd)
-                }
-                is Message.Text -> {
-                    // Was the previous message NOT from this user?
-                    val isFirst = messages.getOrNull(index - 1)?.from != item.from
-                    // Is the next message NOT from this user?
-                    val isLast = messages.getOrNull(index + 1)?.from != item.from
-
-                    TextMessageItem(item, isFirst, isLast, themeColor, Modifier.fillMaxWidth())
-                }
-            }
+            // Was the previous message NOT from this user?
+            val isFirst = messages.getOrNull(index - 1)?.from != item.from
+            // Is the next message NOT from this user?
+            val isLast = messages.getOrNull(index + 1)?.from != item.from
+            MessageItem(
+                item = item,
+                isFirst = isFirst,
+                isLast = isLast,
+                themeColor = themeColor,
+                onEmojiAnimationEnd = onEmojiAnimationEnd,
+                onReactionSelected = { id -> viewModel.addReaction(item, id) }
+            )
         }
 
         item {
@@ -225,6 +235,62 @@ fun Messages(
 }
 
 @Composable
+fun MessageItem(
+    item: Message,
+    isFirst: Boolean,
+    isLast: Boolean,
+    themeColor: Color,
+    onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit,
+    onReactionSelected: (reactionId: String) -> Unit
+) {
+    var popupVisible by remember { mutableStateOf(false) }
+
+    val modifier = Modifier
+        .fillMaxSize()
+        .padding(
+            start = if(item.from == me) 100.dp else 12.dp,
+            end = if(item.from == me) 12.dp else 100.dp,
+            top = if (isFirst) 4.dp else 2.dp,
+            bottom = if (isLast) 4.dp else 2.dp
+        ).wrapContentSize(if(item.from == me) Alignment.CenterEnd else Alignment.CenterStart)
+
+    Box(modifier = modifier) {
+        val messageModifier = Modifier
+            .padding(bottom = if(item.reactions.isEmpty()) 0.dp else 18.dp)
+            .clickable(indication = null, onLongClick = { popupVisible = true }) {}
+
+        when (item) {
+            is Message.Emoji -> {
+                EmojiMessageItem(item, themeColor, messageModifier, onEmojiAnimationEnd)
+            }
+            is Message.Text -> {
+                TextMessageItem(item, isFirst, isLast, themeColor, messageModifier)
+            }
+        }
+
+        item.reactions.takeIf { it.isNotEmpty() }?.let { reactions ->
+            Reactions(reactions, 12.dp, Modifier.align(Alignment.BottomEnd))
+        }
+
+        if(popupVisible) {
+            Popup(
+                alignment = Alignment.TopStart,
+                offset = IntOffset(0, -150),
+                onDismissRequest = { popupVisible = false }
+            ) {
+                ReactionPopup(
+                    emojiSize = 28.dp,
+                    onReactionSelected = {
+                        popupVisible = false
+                        onReactionSelected(it)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun TextMessageItem(
     item: Message.Text,
     isFirst: Boolean,
@@ -238,33 +304,20 @@ fun TextMessageItem(
 
     val backgroundColor: Color
     val contentColor: Color
-    val messageModifier: Modifier
     when (item.from) {
         me -> {
             backgroundColor = themeColor
             contentColor = Color.White
-            messageModifier = Modifier.padding(
-                start = 100.dp,
-                end = 12.dp,
-                top = if (isFirst) 4.dp else 1.dp,
-                bottom = if (isLast) 4.dp else 1.dp
-            ).wrapContentSize(Alignment.CenterEnd)
         }
         else -> {
             backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis
             contentColor = contentColorFor(color = backgroundColor)
-            messageModifier = Modifier.padding(
-                start = 12.dp,
-                end = 100.dp,
-                top = if (isFirst) 4.dp else 2.dp,
-                bottom = if (isLast) 4.dp else 2.dp
-            ).wrapContentSize(Alignment.CenterStart)
         }
     }
 
     TextMessage(
         text = item.message,
-        modifier = modifier.then(messageModifier),
+        modifier = modifier,
         backgroundColor = backgroundColor,
         contentColor = contentColor,
         topLeftCorner = if (item.from == me) 18.dp else topVariedCorner,
@@ -336,12 +389,6 @@ fun EmojiMessageItem(
         size = size,
         rotation = 0f,
         modifier = modifier
-            .padding(
-                start = 12.dp,
-                end = 12.dp,
-                top = 4.dp,
-                bottom = 4.dp
-            ).wrapContentSize(if (item.from == me) Alignment.CenterEnd else Alignment.CenterStart)
     )
 }
 
@@ -360,4 +407,53 @@ fun EmojiMessage(
             .size(size)
             .drawLayer(rotationZ = rotation)
     )
+}
+
+@Composable
+fun Reactions(
+    reactions: List<Reaction>,
+    size: Dp,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .clip(CircleShape)
+            .background(MaterialTheme.colors.surface)
+            .padding(2.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colors.onSurfaceLowEmphasis)
+            .padding(8.dp, 4.dp)
+    ) {
+        reactions.forEach { reaction ->
+            CoilImage(
+                resIdFor(reaction.id) ?: "",
+                modifier = Modifier.size(size)
+            )
+        }
+    }
+}
+
+@Composable
+fun ReactionPopup(
+    emojiSize: Dp,
+    modifier: Modifier = Modifier,
+    onReactionSelected: (reactionId: String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .drawShadow(4.dp, CircleShape)
+            .background(MaterialTheme.colors.surface, CircleShape)
+            .padding(16.dp, 16.dp)
+            .then(modifier),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        for(reactionId in listOf(HEART_1, TEARS_OF_JOY, STRAIGHT_FACE, CLAPPING_HANDS, SWEAR_FACE, POO)) {
+            CoilImage(
+                resIdFor(reactionId) ?: "",
+                modifier = Modifier.size(emojiSize).clickable { onReactionSelected(reactionId) },
+                fadeIn = true
+            )
+        }
+    }
 }
