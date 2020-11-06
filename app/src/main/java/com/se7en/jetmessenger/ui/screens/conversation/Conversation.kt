@@ -36,6 +36,7 @@ import com.se7en.jetmessenger.data.models.Reaction
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.data.models.emptyUser
 import com.se7en.jetmessenger.ui.backPressHandler
+import com.se7en.jetmessenger.ui.components.CircleImage
 import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.screens.ToolbarAction
 import com.se7en.jetmessenger.ui.screens.conversation.info.Content
@@ -204,14 +205,30 @@ fun Messages(
             val isFirst = messages.getOrNull(index - 1)?.from != item.from
             // Is the next message NOT from this user?
             val isLast = messages.getOrNull(index + 1)?.from != item.from
-            MessageItem(
-                item = item,
-                isFirst = isFirst,
-                isLast = isLast,
-                themeColor = themeColor,
-                onEmojiAnimationEnd = onEmojiAnimationEnd,
-                onReactionSelected = { id -> viewModel.addReaction(item, id) }
-            )
+
+            Row {
+                if(item.from != me) {
+                    val avatarModifier = Modifier
+                        .padding(8.dp, 0.dp)
+                        .size(24.dp)
+                        .align(Alignment.Bottom)
+
+                    if(isLast) {
+                        CircleImage(imageData = user.picture.thumbnail, avatarModifier)
+                    } else {
+                        Spacer(modifier = avatarModifier)
+                    }
+                }
+
+                MessageItem(
+                    item = item,
+                    isFirst = isFirst,
+                    isLast = isLast,
+                    themeColor = themeColor,
+                    onEmojiAnimationEnd = onEmojiAnimationEnd,
+                    onReactionSelected = { id -> viewModel.addReaction(item, id) }
+                )
+            }
         }
 
         item {
@@ -248,7 +265,7 @@ fun MessageItem(
     val modifier = Modifier
         .fillMaxSize()
         .padding(
-            start = if(item.from == me) 100.dp else 12.dp,
+            start = if(item.from == me) 100.dp else 4.dp,
             end = if(item.from == me) 12.dp else 100.dp,
             top = if (isFirst) 4.dp else 2.dp,
             bottom = if (isLast) 4.dp else 2.dp
