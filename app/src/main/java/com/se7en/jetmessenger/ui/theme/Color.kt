@@ -2,6 +2,7 @@ package com.se7en.jetmessenger.ui.theme
 
 import android.content.Context
 import android.util.LruCache
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
@@ -17,9 +18,14 @@ import kotlinx.coroutines.withContext
 
 val messengerBlue = Color(0xFF0078FF)
 val messengerLightBlue = Color(0xFF00C6FF)
+val messageGray = Color(0xFFE6E6E6)
+val messageGrayDark = Color(0xFF2F2F2F)
 
 val Colors.onSurfaceLowEmphasis: Color
     get() = onSurface.copy(alpha = 0.12f)
+
+@Composable
+fun messageBackground() = if(isSystemInDarkTheme()) messageGrayDark else messageGray
 
 // DominantColorState copied and modified from Jetcaster:
 // https://github.com/android/compose-samples/blob/master/Jetcaster/app/src/main/java/com/example/jetcaster/util/DynamicTheming.kt

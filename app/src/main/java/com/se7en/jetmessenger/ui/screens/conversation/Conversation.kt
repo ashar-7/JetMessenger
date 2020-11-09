@@ -9,42 +9,48 @@ import androidx.compose.animation.transition
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.contentColorFor
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Reply
 import androidx.compose.runtime.*
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawShadow
 import androidx.compose.ui.drawLayer
+import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.se7en.jetmessenger.data.me
-import com.se7en.jetmessenger.data.models.Message
-import com.se7en.jetmessenger.data.models.Reaction
-import com.se7en.jetmessenger.data.models.User
-import com.se7en.jetmessenger.data.models.emptyUser
+import com.se7en.jetmessenger.data.models.*
 import com.se7en.jetmessenger.ui.backPressHandler
 import com.se7en.jetmessenger.ui.components.CircleImage
 import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.screens.ToolbarAction
 import com.se7en.jetmessenger.ui.screens.conversation.info.Content
+import com.se7en.jetmessenger.ui.theme.messageBackground
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import com.se7en.jetmessenger.viewmodels.ConversationViewModel
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
 import dev.chrisbanes.accompanist.coil.CoilImage
+import kotlin.math.abs
 
 val emojiSize = DpPropKey()
 val rotation = FloatPropKey()
@@ -104,6 +110,7 @@ fun Routing.Conversation.Content(
     onBackPress: () -> Unit
 ) {
     val user by usersViewModel.getUser(userId).collectAsState(emptyUser())
+    var replyingTo by remember { mutableStateOf<ReplyTo?>(null) }
 
     var themeColor by remember { mutableStateOf(messengerBlue) }
     var currentEmoji by remember { mutableStateOf(THUMBS_UP) }
@@ -139,9 +146,14 @@ fun Routing.Conversation.Content(
             },
             bottomBar = {
                 BottomBar(
-                    onSendClick = { conversationViewModel.sendTextMessage(user, it) },
-                    themeColor = themeColor,
                     emojiId = currentEmoji,
+                    replyingTo = replyingTo,
+                    themeColor = themeColor,
+                    onReplyingToBoxClose = { replyingTo = null },
+                    onSendClick = {
+                        conversationViewModel.sendTextMessage(user, it, replyingTo)
+                        replyingTo = null
+                    },
                     onEmojiPressStart = { emojiState = EmojiState.START },
                     onEmojiPressStop = {
                         if (transitionState[emojiSize] > 20.dp) {
@@ -149,7 +161,9 @@ fun Routing.Conversation.Content(
                                 user,
                                 currentEmoji,
                                 size = transitionState[emojiSize] * emojiScale,
+                                repliedTo = replyingTo
                             )
+                            replyingTo = null
                         }
                         emojiState = EmojiState.END
                     }
@@ -163,10 +177,14 @@ fun Routing.Conversation.Content(
                 Messages(
                     user = user,
                     viewModel = conversationViewModel,
-                    modifier = Modifier.fillMaxWidth().padding(0.dp, 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(0.dp, 8.dp),
                     themeColor = themeColor,
                     emojiId = currentEmoji,
                     transitionState = transitionState,
+                    onReplyDragStopped = { message ->
+                        val name = if(message.from == me) "Yourself" else message.from.name.first
+                        replyingTo = ReplyTo(name, message)
+                    },
                     onEmojiAnimationEnd = { it.shouldAnimate = false }
                 )
             }
@@ -194,6 +212,7 @@ fun Messages(
     themeColor: Color = MaterialTheme.colors.primary,
     emojiId: String,
     transitionState: TransitionState,
+    onReplyDragStopped: (message: Message) -> Unit,
     onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit
 ) {
     val messages = viewModel.messages.getValue(user)
@@ -206,7 +225,8 @@ fun Messages(
             // Is the next message NOT from this user?
             val isLast = messages.getOrNull(index + 1)?.from != item.from
 
-            Row {
+            val offsetPx = remember { mutableStateOf(0f) }
+            Row(modifier = Modifier.offsetPx(offsetPx)) {
                 if(item.from != me) {
                     val avatarModifier = Modifier
                         .padding(8.dp, 0.dp)
@@ -225,6 +245,23 @@ fun Messages(
                     isFirst = isFirst,
                     isLast = isLast,
                     themeColor = themeColor,
+                    modifier = Modifier.fillMaxSize()
+                        .padding(
+                            start = if(item.from == me) 100.dp else 4.dp,
+                            end = if(item.from == me) 12.dp else 100.dp,
+                            top = if (isFirst) 4.dp else 2.dp,
+                            bottom = if (isLast) 4.dp else 2.dp
+                        )
+                        .wrapContentSize(if(item.from == me) Alignment.CenterEnd else Alignment.CenterStart)
+                        .draggableMessage(
+                            offsetPx,
+                            reverse = item.from == me,
+                            onDragStopped = { offset ->
+                                if(abs(offset) >= 50) onReplyDragStopped(item)
+                            }
+                        ) { offset ->
+                            offsetPx.value = offset
+                        },
                     onEmojiAnimationEnd = onEmojiAnimationEnd,
                     onReactionSelected = { id -> viewModel.addReaction(item, id) }
                 )
@@ -238,14 +275,11 @@ fun Messages(
                 tint = if(emojiId == THUMBS_UP) themeColor else null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        start = 100.dp,
-                        end = 12.dp,
-                        top = 4.dp,
-                        bottom = 4.dp
-                    ).wrapContentSize(Alignment.CenterEnd),
+                    .padding(start = 100.dp, end = 12.dp, top = 4.dp, bottom = 4.dp)
+                    .wrapContentSize(Alignment.CenterEnd),
                 size = transitionState[emojiSize],
-                rotation = transitionState[rotation]
+                rotation = transitionState[rotation],
+                shape = null
             )
         }
     }
@@ -257,51 +291,100 @@ fun MessageItem(
     isFirst: Boolean,
     isLast: Boolean,
     themeColor: Color,
+    modifier: Modifier = Modifier,
     onEmojiAnimationEnd: (emoji: Message.Emoji) -> Unit,
     onReactionSelected: (reactionId: String) -> Unit
 ) {
     var popupVisible by remember { mutableStateOf(false) }
 
-    val modifier = Modifier
-        .fillMaxSize()
-        .padding(
-            start = if(item.from == me) 100.dp else 4.dp,
-            end = if(item.from == me) 12.dp else 100.dp,
-            top = if (isFirst) 4.dp else 2.dp,
-            bottom = if (isLast) 4.dp else 2.dp
-        ).wrapContentSize(if(item.from == me) Alignment.CenterEnd else Alignment.CenterStart)
+    Column(
+        modifier = modifier,
+        horizontalAlignment = if(item.from == me) Alignment.End else Alignment.Start
+    ) {
 
-    Box(modifier = modifier) {
-        val messageModifier = Modifier
-            .padding(bottom = if(item.reactions.isEmpty()) 0.dp else 18.dp)
-            .clickable(indication = null, onLongClick = { popupVisible = true }) {}
-
-        when (item) {
-            is Message.Emoji -> {
-                EmojiMessageItem(item, themeColor, messageModifier, onEmojiAnimationEnd)
-            }
-            is Message.Text -> {
-                TextMessageItem(item, isFirst, isLast, themeColor, messageModifier)
-            }
-        }
-
-        item.reactions.takeIf { it.isNotEmpty() }?.let { reactions ->
-            Reactions(reactions, 12.dp, Modifier.align(Alignment.BottomEnd))
-        }
-
-        if(popupVisible) {
-            Popup(
-                alignment = Alignment.TopStart,
-                offset = IntOffset(0, -150),
-                onDismissRequest = { popupVisible = false }
+        item.repliedTo?.let {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                ReactionPopup(
-                    emojiSize = 28.dp,
-                    onReactionSelected = {
-                        popupVisible = false
-                        onReactionSelected(it)
-                    }
+                Icon(
+                    Icons.Rounded.Reply,
+                    modifier = Modifier.size(12.dp),
+                    tint = MaterialTheme.colors.onSurface
                 )
+                val text = when(item.from) {
+                    me -> {
+                        if(it.name == me.name.first) "You replied to yourself"
+                        else "You replied to ${it.name}"
+                    }
+                    else -> {
+                        if(it.name == me.name.first) "${it.name} replied to you"
+                        else "${it.name} replied to themself"
+                    }
+                }
+
+                Text(text, style = MaterialTheme.typography.caption)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+
+            val padding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 32.dp)
+            val bgColor = messageBackground().copy(alpha = 0.5f)
+            val shape = RoundedCornerShape(18.dp)
+            when (it.message) {
+                is Message.Emoji -> {
+                    EmojiMessage(
+                        id = it.message.id,
+                        size = 16.dp,
+                        tint = if (it.message.id == THUMBS_UP) themeColor else null,
+                        paddingValues = padding,
+                        backgroundColor = bgColor,
+                        shape = shape
+                    )
+                }
+                is Message.Text -> {
+                    TextMessage(
+                        text = it.message.message,
+                        paddingValues = padding,
+                        backgroundColor = bgColor,
+                        contentColor = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                        shape = shape
+                    )
+                }
+            }
+        }
+
+        Box(modifier = Modifier.offset(y = if(item.repliedTo != null) -(8).dp else 0.dp)) {
+            val messageModifier = Modifier
+                .padding(bottom = if (item.reactions.isEmpty()) 0.dp else 18.dp)
+                .clickable(indication = null, onLongClick = { popupVisible = true }) {}
+
+            when (item) {
+                is Message.Emoji -> {
+                    EmojiMessageItem(item, themeColor, messageModifier, onEmojiAnimationEnd)
+                }
+                is Message.Text -> {
+                    TextMessageItem(item, isFirst, isLast, themeColor, messageModifier)
+                }
+            }
+
+            item.reactions.takeIf { it.isNotEmpty() }?.let { reactions ->
+                Reactions(reactions, 12.dp, Modifier.align(Alignment.BottomEnd))
+            }
+
+            if (popupVisible) {
+                Popup(
+                    alignment = Alignment.TopStart,
+                    offset = IntOffset(0, -150),
+                    onDismissRequest = { popupVisible = false }
+                ) {
+                    ReactionPopup(
+                        emojiSize = 28.dp,
+                        onReactionSelected = {
+                            popupVisible = false
+                            onReactionSelected(it)
+                        }
+                    )
+                }
             }
         }
     }
@@ -327,7 +410,7 @@ fun TextMessageItem(
             contentColor = Color.White
         }
         else -> {
-            backgroundColor = MaterialTheme.colors.onSurfaceLowEmphasis
+            backgroundColor = messageBackground()
             contentColor = contentColorFor(color = backgroundColor)
         }
     }
@@ -337,35 +420,30 @@ fun TextMessageItem(
         modifier = modifier,
         backgroundColor = backgroundColor,
         contentColor = contentColor,
-        topLeftCorner = if (item.from == me) 18.dp else topVariedCorner,
-        topRightCorner = if (item.from == me) topVariedCorner else 18.dp,
-        bottomRightCorner = if (item.from == me) bottomVariedCorner else 18.dp,
-        bottomLeftCorner = if (item.from == me) 18.dp else bottomVariedCorner
+        shape = RoundedCornerShape(
+            topLeft = if (item.from == me) 18.dp else topVariedCorner,
+            topRight = if (item.from == me) topVariedCorner else 18.dp,
+            bottomRight = if (item.from == me) bottomVariedCorner else 18.dp,
+            bottomLeft = if (item.from == me) 18.dp else bottomVariedCorner
+        )
     )
 }
 
 @Composable
 fun TextMessage(
     text: String,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colors.primary,
     contentColor: Color = contentColorFor(backgroundColor),
-    topLeftCorner: Dp = 0.dp,
-    topRightCorner: Dp = 0.dp,
-    bottomRightCorner: Dp = 0.dp,
-    bottomLeftCorner: Dp = 0.dp
+    paddingValues: PaddingValues = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+    shape: Shape?
 ) {
+    val shapeModifier = if(shape != null) Modifier.clip(shape) else Modifier
     Box(
         modifier = modifier
-            .clip(
-                RoundedCornerShape(
-                    topLeftCorner,
-                    topRightCorner,
-                    bottomRightCorner,
-                    bottomLeftCorner
-                )
-            ).background(backgroundColor)
-            .padding(12.dp, 8.dp)
+            .then(shapeModifier)
+            .background(backgroundColor)
+            .padding(paddingValues)
     ) {
         Text(
             text = text,
@@ -405,7 +483,8 @@ fun EmojiMessageItem(
         tint = if (item.id == THUMBS_UP) themeColor else null,
         size = size,
         rotation = 0f,
-        modifier = modifier
+        modifier = modifier,
+        shape = null
     )
 }
 
@@ -416,14 +495,26 @@ fun EmojiMessage(
     tint: Color? = null,
     rotation: Float = 0f,
     modifier: Modifier = Modifier,
+    backgroundColor: Color? = null,
+    paddingValues: PaddingValues = PaddingValues(),
+    shape: Shape?
 ) {
-    CoilImage(
-        data = resIdFor(id) ?: "",
-        colorFilter = tint?.let { ColorFilter.tint(it) },
+    val bgModifier = if(backgroundColor != null) Modifier.background(backgroundColor) else Modifier
+    val shapeModifier = if(shape != null) Modifier.clip(shape) else Modifier
+    Box(
         modifier = modifier
-            .size(size)
-            .drawLayer(rotationZ = rotation)
-    )
+            .then(shapeModifier)
+            .then(bgModifier)
+            .padding(paddingValues)
+    ) {
+        CoilImage(
+            data = resIdFor(id) ?: "",
+            colorFilter = tint?.let { ColorFilter.tint(it) },
+            modifier = modifier
+                .size(size)
+                .drawLayer(rotationZ = rotation)
+        )
+    }
 }
 
 @Composable
@@ -474,3 +565,19 @@ fun ReactionPopup(
         }
     }
 }
+
+fun Modifier.draggableMessage(
+    currentOffset: State<Float>,
+    reverse: Boolean,
+    deltaScale: Float = 1/4f,
+    onDragStopped: (Float) -> Unit,
+    onOffsetChange: (offset: Float) -> Unit
+) = draggable(
+    Orientation.Horizontal,
+    onDragStopped = { onDragStopped(currentOffset.value); onOffsetChange(0f);  },
+    onDrag = {
+        val delta = it * deltaScale
+        val update = if(reverse) currentOffset.value + delta <= 0 else currentOffset.value + delta >= 0
+        if(update) onOffsetChange(currentOffset.value + delta)
+    }
+)

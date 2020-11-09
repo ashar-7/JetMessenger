@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.se7en.jetmessenger.data.me
 import com.se7en.jetmessenger.data.models.Message
 import com.se7en.jetmessenger.data.models.Reaction
+import com.se7en.jetmessenger.data.models.ReplyTo
 import com.se7en.jetmessenger.data.models.User
 import com.se7en.jetmessenger.ui.screens.conversation.FIRE
 import com.se7en.jetmessenger.ui.screens.conversation.THUMBS_UP
@@ -22,13 +23,13 @@ class ConversationViewModel : ViewModel() {
         )
     }
 
-    fun sendTextMessage(to: User, message: String) {
-        messages[to] = messages.getValue(to) + Message.Text(message, me)
+    fun sendTextMessage(to: User, message: String, repliedTo: ReplyTo? = null) {
+        messages[to] = messages.getValue(to) + Message.Text(message, me, repliedTo = repliedTo)
     }
 
-    fun sendEmoji(to: User, id: String, size: Dp, shouldAnimate: Boolean = true) {
+    fun sendEmoji(to: User, id: String, size: Dp, shouldAnimate: Boolean = true, repliedTo: ReplyTo? = null) {
         messages[to] = messages.getValue(to) +
-                Message.Emoji(id, size, shouldAnimate, me)
+                Message.Emoji(id, size, shouldAnimate, me, repliedTo = repliedTo)
     }
 
     fun addReaction(message: Message, reactionId: String) {
