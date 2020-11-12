@@ -1,6 +1,5 @@
 package com.se7en.jetmessenger.ui.components
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*

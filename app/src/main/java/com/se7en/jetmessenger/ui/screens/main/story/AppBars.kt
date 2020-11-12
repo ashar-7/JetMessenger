@@ -6,7 +6,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,20 +68,20 @@ fun Routing.Main.Story.TopBar(
                     CircleImage(imageData = story.user.picture.medium, modifier = Modifier.size(36.dp))
 
                     Column {
-                        ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
+                        Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
                             Text(
                                 text = "${story.user.name.first} ${story.user.name.last}",
                                 style = MaterialTheme.typography.subtitle2,
                                 color = contentColor
                             )
-                        }
-                        ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.medium) {
+                        })
+                        Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
                             Text(
                                 text = story.time,
                                 style = MaterialTheme.typography.subtitle2,
                                 color = contentColor
                             )
-                        }
+                        })
                     }
                 }
 

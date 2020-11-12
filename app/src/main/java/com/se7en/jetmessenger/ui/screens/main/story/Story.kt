@@ -44,7 +44,7 @@ fun Routing.Main.Story.Content(
             }
             val progress = animatedFloat(initVal = 0f, clock = animationClock.clock)
 
-            LaunchedTask(story.thumbnailUrl) {
+            LaunchedEffect(story.thumbnailUrl) {
                 colorState.updateColorsFromImageUrl(story.thumbnailUrl)
             }
 
