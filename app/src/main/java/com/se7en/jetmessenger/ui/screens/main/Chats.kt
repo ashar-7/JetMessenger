@@ -1,17 +1,13 @@
 package com.se7en.jetmessenger.ui.screens.main
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ProvideTextStyle
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRowForIndexed
-import androidx.compose.material.AmbientEmphasisLevels
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideEmphasis
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +29,7 @@ import com.se7en.jetmessenger.ui.theme.typography
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
-@OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 @Composable
 fun Routing.Main.BottomNav.Chats.Content(
     users: List<User>,
@@ -149,26 +145,26 @@ fun ChatItem(
         Column(
             modifier = Modifier.align(Alignment.CenterVertically)
         ) {
-            ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
+            Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
                 Text(
                     "${user.name.first} ${user.name.last}",
                     style = MaterialTheme.typography.subtitle1
                 )
-            }
+            })
 
             Spacer(modifier = Modifier.padding(2.dp))
 
             ProvideTextStyle(value = typography.caption.copy(
                 fontSize = 14.sp
-            )) {
-                ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.medium) {
+            ), children = {
+                Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
                     LastMessageWithDateTime(
                         user.name.first,
                         lastMessage,
                         dateTime
                     )
-                }
-            }
+                })
+            })
         }
     }
 }
@@ -182,9 +178,9 @@ fun LastMessageWithDateTime(
     Row {
         Text(
             "$name: $lastMessage",
-            maxLines = 1,
+            modifier = Modifier.weight(1f, false),
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, false)
+            maxLines = 1
         )
         Text(" • $dateTime", maxLines = 1)
     }

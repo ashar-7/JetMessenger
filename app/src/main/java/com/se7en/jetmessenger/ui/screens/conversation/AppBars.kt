@@ -2,11 +2,15 @@ package com.se7en.jetmessenger.ui.screens.conversation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
@@ -17,8 +21,9 @@ import androidx.compose.ui.gesture.pressIndicatorGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -229,21 +234,22 @@ private fun RowScope.BottomBarLowerContent(
         modifier = Modifier
             .clip(CircleShape)
             .background(MaterialTheme.colors.onSurfaceLowEmphasis)
-            .weight(1f)
+            .weight(1f),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        BaseTextField(
+        BasicTextField(
             value = message,
-            onValueChange = { new ->
-                message = new
-                expanded = true
-            },
+            onValueChange = { message = it; expanded = true },
             modifier = Modifier
                 .padding(14.dp, 4.dp)
                 .weight(1f, true),
-            keyboardType = KeyboardType.Text,
-            textColor = MaterialTheme.colors.onSurface,
-            cursorColor = MaterialTheme.colors.primary,
-            imeAction = ImeAction.NoAction
+            textStyle = MaterialTheme.typography.subtitle2.copy(color = MaterialTheme.colors.onSurface),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.NoAction
+            ),
+            visualTransformation = VisualTransformation.None,
+            cursorColor = MaterialTheme.colors.primary
         )
 
         Icon(

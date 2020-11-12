@@ -1,19 +1,15 @@
 package com.se7en.jetmessenger.ui.screens.main
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRowForIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AmbientEmphasisLevels
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideEmphasis
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +32,7 @@ import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.ui.theme.messengerBlue
 import com.se7en.jetmessenger.ui.theme.onSurfaceLowEmphasis
 import dev.chrisbanes.accompanist.coil.CoilImage
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@OptIn(ExperimentalLazyDsl::class, ExperimentalCoroutinesApi::class)
 @Composable
 fun Routing.Main.BottomNav.People.Content(
     users: List<User>,
@@ -62,7 +56,7 @@ fun Routing.Main.BottomNav.People.Content(
         }
         item { StoriesRow(stories, onStoryClick) }
         item {
-            ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.disabled) {
+            Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
                 Text(
                     text = "ACTIVE",
                     modifier = Modifier.padding(14.dp, 8.dp),
@@ -70,7 +64,7 @@ fun Routing.Main.BottomNav.People.Content(
                         fontSize = 13.sp
                     )
                 )
-            }
+            })
         }
         items(
             users.filterIndexed { index, _ -> index % 3 == 0 }
@@ -103,12 +97,12 @@ fun ActiveFriendItem(
 
         Spacer(modifier = Modifier.padding(4.dp))
 
-        ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
+        Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
             Text(
                 "${user.name.first} ${user.name.last}",
                 style = MaterialTheme.typography.subtitle1
             )
-        }
+        })
     }
 }
 
@@ -148,9 +142,7 @@ fun StoryItem(
     }
 
     Card(
-        backgroundColor = AmbientEmphasisLevels.current.disabled.applyEmphasis(
-            MaterialTheme.colors.surface
-        ),
+        backgroundColor = MaterialTheme.colors.surface.copy(ContentAlpha.disabled),
         contentColor = Color.White,
         shape = RoundedCornerShape(4.dp),
         modifier = modifier

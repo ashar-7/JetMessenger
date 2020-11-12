@@ -58,12 +58,12 @@ dependencies {
     implementation "androidx.compose.material:material:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "androidx.ui:ui-tooling:$compose_version"
-    implementation "androidx.navigation:navigation-compose:1.0.0-alpha01"
+    implementation "androidx.navigation:navigation-compose:1.0.0-alpha02"
 
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.0-beta01'
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.0-beta01"
 
-    implementation 'dev.chrisbanes.accompanist:accompanist-coil:0.3.2'
+    implementation 'dev.chrisbanes.accompanist:accompanist-coil:0.3.3.1'
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'

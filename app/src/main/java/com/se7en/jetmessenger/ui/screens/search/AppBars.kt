@@ -1,11 +1,11 @@
 package com.se7en.jetmessenger.ui.screens.search
 
-import androidx.compose.foundation.BaseTextField
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -14,8 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.se7en.jetmessenger.ui.screens.Routing
 
@@ -31,19 +32,18 @@ fun Routing.Search.TopBar(
     TopAppBar(
         title = {
             Box {
-                BaseTextField(
+                BasicTextField(
                     value = query,
-                    onValueChange = {
-                        query = it
-                        onSearch(query.text)
-                    },
+                    onValueChange = { query = it; onSearch(query.text) },
                     modifier = Modifier.align(Alignment.CenterStart).padding(0.dp, 8.dp),
-                    textStyle = MaterialTheme.typography.subtitle1,
-                    cursorColor = MaterialTheme.colors.primary,
-                    textColor = MaterialTheme.colors.onSurface,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Send,
-                    onImeActionPerformed = { onSearch(query.text) }
+                    textStyle = MaterialTheme.typography.subtitle1.copy(color = MaterialTheme.colors.onSurface),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Search
+                    ),
+                    onImeActionPerformed = { onSearch(query.text) },
+                    visualTransformation = VisualTransformation.None,
+                    cursorColor = MaterialTheme.colors.primary
                 )
                 if (query.text.isEmpty()) {
                     Text(

@@ -1,13 +1,14 @@
 package com.se7en.jetmessenger.ui.components
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.ConstraintLayout
 import androidx.compose.foundation.layout.Dimension
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.AmbientEmphasisLevels
+import androidx.compose.material.AmbientContentAlpha
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideEmphasis
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,7 +58,7 @@ fun UserAvatarWithTitle(
             modifier = avatarModifier
         )
 
-        ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
+        Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
             Text(
                 text = title,
                 style = MaterialTheme.typography.subtitle2,
@@ -66,7 +67,7 @@ fun UserAvatarWithTitle(
                 overflow = TextOverflow.Ellipsis,
                 modifier = nameModifier
             )
-        }
+        })
     }
 }
 

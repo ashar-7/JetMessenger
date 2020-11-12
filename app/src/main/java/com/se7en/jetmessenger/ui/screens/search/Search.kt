@@ -1,15 +1,10 @@
 package com.se7en.jetmessenger.ui.screens.search
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.ExperimentalLazyDsl
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRowForIndexed
-import androidx.compose.material.AmbientEmphasisLevels
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.ProvideEmphasis
-import androidx.compose.material.Scaffold
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +17,6 @@ import com.se7en.jetmessenger.ui.screens.Routing
 import com.se7en.jetmessenger.viewmodels.UsersViewModel
 
 // TODO: No results
-@OptIn(ExperimentalLazyDsl::class)
 @Composable
 fun Routing.Search.Content(
     usersViewModel: UsersViewModel,
@@ -121,12 +115,12 @@ fun UserColumnItem(
 
             Spacer(modifier = Modifier.padding(4.dp))
 
-            ProvideEmphasis(emphasis = AmbientEmphasisLevels.current.high) {
+            Providers(AmbientContentAlpha provides ContentAlpha.high, children = {
                 Text(
                     "${user.name.first} ${user.name.last}",
                     style = MaterialTheme.typography.subtitle1
                 )
-            }
+            })
         }
     }
 }
